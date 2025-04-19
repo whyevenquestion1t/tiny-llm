@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "mini-llm"
+version = "0.1.0"
+description = ""
+authors = ["Alex Chi Z <iskyzh@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+mlx = "^0.25.0"
+torch = "^2.6.0"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.5"
+numpy = "^2.2.4"
+ruff = "^0.11.6"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[project]
+name = "mini-llm"
+version = "0.1.0"
+
+[tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+]
+pythonpath = "src"

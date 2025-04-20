@@ -17,7 +17,7 @@ class MultiHeadAttention:
         self.num_heads = num_heads
         assert hidden_size % num_heads == 0
         self.head_dim = hidden_size // num_heads
-        self.scale = self.head_dim**-0.5
+        self.scale = 1 / math.sqrt(self.head_dim)
         assert wq.shape == (hidden_size, num_heads * self.head_dim)
         assert wk.shape == (hidden_size, num_heads * self.head_dim)
         assert wv.shape == (hidden_size, num_heads * self.head_dim)
@@ -135,13 +135,24 @@ class QwenMultiHeadAttention:
 
 
 class RoPE:
-    def __init__(self, dims: int, seq_len: int, base: int = 10000):
+    def __init__(
+        self,
+        dims: int,
+        seq_len: int,
+        base: int = 10000,
+        stream: mx.Stream | mx.Device | None = None,
+    ):
         self.dims = dims
         self.seq_len = seq_len
-        freqs = 1.0 / (base ** (mx.arange(0, dims, 2)[: (dims // 2)] / dims))
-        t = mx.arange(seq_len)
-        freqs = mx.outer(t, freqs)
-        self.basis = mx.stack([mx.cos(freqs), mx.sin(freqs)], axis=-1)
+        inner = mx.arange(0, dims, 2, stream=stream)[: (dims // 2)] / dims
+        freqs = 1.0 / (mx.power(base, inner, stream=stream))
+        t = mx.arange(seq_len, stream=stream)
+        freqs = mx.outer(t, freqs, stream=stream)
+        self.basis = mx.stack(
+            [mx.cos(freqs, stream=stream), mx.sin(freqs, stream=stream)],
+            axis=-1,
+            stream=stream,
+        )
         assert self.basis.shape == (seq_len, dims // 2, 2)
 
     def __call__(
@@ -152,11 +163,15 @@ class RoPE:
         s = x.shape[-3]
         basis = self.basis[:s, :]
         # reshape x: (b, s, n_heads, head_dim // 2, 2)
-        x = x.reshape(*x.shape[:-1], -1, 2)
+        x = x.reshape(*x.shape[:-1], -1, 2, stream=stream)
         # reshape basis: (1, s, 1, dims // 2, 2)
-        basis = basis.reshape(1, s, 1, self.dims // 2, 2)
-        real = x[..., 0] * basis[..., 0] - x[..., 1] * basis[..., 1]
-        imag = x[..., 1] * basis[..., 0] + x[..., 0] * basis[..., 1]
-        y = mx.stack([real, imag], axis=-1)
+        basis = basis.reshape(1, s, 1, self.dims // 2, 2, stream=stream)
+        real = mx.multiply(x[..., 0], basis[..., 0], stream=stream) - mx.multiply(
+            x[..., 1], basis[..., 1], stream=stream
+        )
+        imag = mx.multiply(x[..., 1], basis[..., 0], stream=stream) + mx.multiply(
+            x[..., 0], basis[..., 1], stream=stream
+        )
+        y = mx.stack([real, imag], axis=-1, stream=stream)
         y = y.reshape(orig_shape)
         return y

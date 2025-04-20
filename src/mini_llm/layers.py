@@ -33,22 +33,21 @@ class MultiHeadAttention:
         key: mx.array,
         value: mx.array,
         mask: mx.array | None = None,
-        stream: mx.Stream | mx.Device | None = None,
     ) -> mx.array:
         n_batches = query.shape[0]
         batch_size = query.shape[1]
         projection_q = (
-            linear(query, self.wq, stream=stream)
+            linear(query, self.wq)
             .reshape(n_batches, self.num_heads * batch_size, self.head_dim)
             .transpose(1, 0, 2)
         )
         projection_k = (
-            linear(key, self.wk, stream=stream)
+            linear(key, self.wk)
             .reshape(n_batches, self.num_heads * batch_size, self.head_dim)
             .transpose(1, 0, 2)
         )
         projection_v = (
-            linear(value, self.wv, stream=stream)
+            linear(value, self.wv)
             .reshape(n_batches, self.num_heads * batch_size, self.head_dim)
             .transpose(1, 0, 2)
         )
@@ -58,10 +57,9 @@ class MultiHeadAttention:
             projection_v,
             scale=self.scale,
             mask=mask,
-            stream=stream,
         )
         x = x.transpose(1, 0, 2).reshape(n_batches, batch_size, self.hidden_size)
-        return linear(x, self.wo, stream=stream)
+        return linear(x, self.wo)
 
 
 class QwenMultiHeadAttention:
@@ -104,21 +102,20 @@ class QwenMultiHeadAttention:
         self,
         x: mx.array,
         mask: mx.array | None = None,
-        stream: mx.Stream | mx.Device | None = None,
     ) -> mx.array:
         B, L, _ = x.shape
         projection_q = (
-            linear(x, self.wq, bias=self.bq, stream=stream)
+            linear(x, self.wq, bias=self.bq)
             .reshape(B, L, self.n_heads, self.head_dim)
             .transpose(0, 2, 1, 3)
         )
         projection_k = (
-            linear(x, self.wk, bias=self.bk, stream=stream)
+            linear(x, self.wk, bias=self.bk)
             .reshape(B, L, self.num_kv_heads, self.head_dim)
             .transpose(0, 2, 1, 3)
         )
         projection_v = (
-            linear(x, self.wv, bias=self.bv, stream=stream)
+            linear(x, self.wv, bias=self.bv)
             .reshape(B, L, self.num_kv_heads, self.head_dim)
             .transpose(0, 2, 1, 3)
         )
@@ -128,10 +125,9 @@ class QwenMultiHeadAttention:
             projection_v,
             scale=self.scale,
             mask=mask,
-            stream=stream,
         )
         x = x.transpose(0, 2, 1, 3).reshape(B, L, self.hidden_size)
-        return linear(x, self.wo, stream=stream)
+        return linear(x, self.wo)
 
 
 class RoPE:
@@ -140,38 +136,34 @@ class RoPE:
         dims: int,
         seq_len: int,
         base: int = 10000,
-        stream: mx.Stream | mx.Device | None = None,
     ):
         self.dims = dims
         self.seq_len = seq_len
-        inner = mx.arange(0, dims, 2, stream=stream)[: (dims // 2)] / dims
-        freqs = 1.0 / (mx.power(base, inner, stream=stream))
-        t = mx.arange(seq_len, stream=stream)
-        freqs = mx.outer(t, freqs, stream=stream)
+        inner = mx.arange(0, dims, 2)[: (dims // 2)] / dims
+        freqs = 1.0 / (mx.power(base, inner))
+        t = mx.arange(seq_len)
+        freqs = mx.outer(t, freqs)
         self.basis = mx.stack(
-            [mx.cos(freqs, stream=stream), mx.sin(freqs, stream=stream)],
+            [mx.cos(freqs), mx.sin(freqs)],
             axis=-1,
-            stream=stream,
         )
         assert self.basis.shape == (seq_len, dims // 2, 2)
 
-    def __call__(
-        self, x: mx.array, stream: mx.Stream | mx.Device | None = None
-    ) -> tuple[mx.array, mx.array]:
+    def __call__(self, x: mx.array) -> tuple[mx.array, mx.array]:
         # input x: (b, s, n_heads, head_dim)
         orig_shape = x.shape
         s = x.shape[-3]
         basis = self.basis[:s, :]
         # reshape x: (b, s, n_heads, head_dim // 2, 2)
-        x = x.reshape(*x.shape[:-1], -1, 2, stream=stream)
+        x = x.reshape(*x.shape[:-1], -1, 2)
         # reshape basis: (1, s, 1, dims // 2, 2)
-        basis = basis.reshape(1, s, 1, self.dims // 2, 2, stream=stream)
-        real = mx.multiply(x[..., 0], basis[..., 0], stream=stream) - mx.multiply(
-            x[..., 1], basis[..., 1], stream=stream
+        basis = basis.reshape(1, s, 1, self.dims // 2, 2)
+        real = mx.multiply(x[..., 0], basis[..., 0]) - mx.multiply(
+            x[..., 1], basis[..., 1]
         )
-        imag = mx.multiply(x[..., 1], basis[..., 0], stream=stream) + mx.multiply(
-            x[..., 0], basis[..., 1], stream=stream
+        imag = mx.multiply(x[..., 1], basis[..., 0]) + mx.multiply(
+            x[..., 0], basis[..., 1]
         )
-        y = mx.stack([real, imag], axis=-1, stream=stream)
+        y = mx.stack([real, imag], axis=-1)
         y = y.reshape(orig_shape)
         return y

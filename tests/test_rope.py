@@ -17,20 +17,25 @@ def test_rope(stream: mx.Stream):
     MAX_SEQ_LEN = 2
     BASE = 10000
 
-    for _ in range(100):
-        reference_layer = (
-            torchtune.modules.position_embeddings.RotaryPositionalEmbeddings(
-                HEAD_DIM,
-                MAX_SEQ_LEN,
-                BASE,
+    with mx.stream(stream):
+        for _ in range(100):
+            reference_layer = (
+                torchtune.modules.position_embeddings.RotaryPositionalEmbeddings(
+                    HEAD_DIM,
+                    MAX_SEQ_LEN,
+                    BASE,
+                )
             )
-        )
-        user_layer = RoPE(HEAD_DIM, MAX_SEQ_LEN, BASE, stream=stream)
-        x = np.random.rand(BATCH_SIZE, MAX_SEQ_LEN, NUM_HEADS, HEAD_DIM)
-        y = np.random.rand(BATCH_SIZE, MAX_SEQ_LEN, NUM_KV_HEADS, HEAD_DIM)
-        reference_output = reference_layer.forward(torch.tensor(x, device=TORCH_DEVICE))
-        user_output = user_layer(mx.array(x), stream=stream)
-        assert_allclose(user_output, reference_output, np.float32, atol=1e-6)
-        reference_output = reference_layer.forward(torch.tensor(y, device=TORCH_DEVICE))
-        user_output = user_layer(mx.array(y), stream=stream)
-        assert_allclose(user_output, reference_output, np.float32, atol=1e-6)
+            user_layer = RoPE(HEAD_DIM, MAX_SEQ_LEN, BASE)
+            x = np.random.rand(BATCH_SIZE, MAX_SEQ_LEN, NUM_HEADS, HEAD_DIM)
+            y = np.random.rand(BATCH_SIZE, MAX_SEQ_LEN, NUM_KV_HEADS, HEAD_DIM)
+            reference_output = reference_layer.forward(
+                torch.tensor(x, device=TORCH_DEVICE)
+            )
+            user_output = user_layer(mx.array(x))
+            assert_allclose(user_output, reference_output, np.float32, atol=1e-6)
+            reference_output = reference_layer.forward(
+                torch.tensor(y, device=TORCH_DEVICE)
+            )
+            user_output = user_layer(mx.array(y))
+            assert_allclose(user_output, reference_output, np.float32, atol=1e-6)

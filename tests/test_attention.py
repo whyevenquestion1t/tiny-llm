@@ -1,38 +1,10 @@
 import pytest
 import mlx.core as mx
 import torch
-from mini_llm.funcs import (
-    scaled_dot_product_attention,
-    softmax,
-    scaled_dot_product_attention_grouped,
-)
-from mini_llm.layers import MultiHeadAttention
+from mini_llm.funcs import *
+from mini_llm.layers import *
 import numpy as np
-
-AVAILABLE_STREAMS = [mx.cpu, mx.gpu]
-AVAILABLE_STREAMS_IDS = ["cpu", "gpu"]
-PRECISIONS = [np.float32, np.float16]
-PRECISION_IDS = ["f32", "f16"]
-TORCH_DEVICE = torch.device("cpu")
-
-
-def assert_allclose(a: mx.array, b: torch.Tensor, precision: np.dtype):
-    a = np.array(a)
-    b = b.cpu().numpy()
-    if precision == np.float32:
-        rtol = 1.0e-6
-        atol = 1.0e-8
-    elif precision == np.float16:
-        rtol = 1.0e-2
-        atol = 1.0e-8
-    assert a.shape == b.shape
-    if not np.allclose(a, b, rtol=rtol, atol=atol):
-        print("a=", a)
-        print("b=", b)
-        diff = np.invert(np.isclose(a, b, rtol=rtol, atol=atol))
-        print("diff_a=", a * diff)
-        print("diff_b=", b * diff)
-        assert False, f"result mismatch"
+from .utils import *
 
 
 @pytest.mark.parametrize("stream", AVAILABLE_STREAMS, ids=AVAILABLE_STREAMS_IDS)

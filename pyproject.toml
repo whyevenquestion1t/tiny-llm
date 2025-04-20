@@ -11,6 +11,7 @@ mlx = "^0.25.0"
 torch = "^2.6.0"
 mlx-lm = "^0.23.0"
 torchtune = "^0.6.1"
+torchao = "^0.10.0"
 
 
 [tool.poetry.group.dev.dependencies]

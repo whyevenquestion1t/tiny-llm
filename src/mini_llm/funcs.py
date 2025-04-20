@@ -5,6 +5,7 @@ import math
 def softmax(
     x: mx.array, axis: int, stream: mx.Stream | mx.Device | None = None
 ) -> mx.array:
+    # TODO: manual implementation
     return mx.softmax(x, axis=axis, stream=stream)
 
 

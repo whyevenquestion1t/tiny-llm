@@ -2342,6 +2342,20 @@ opt-einsum = ["opt-einsum (>=3.3)"]
 optree = ["optree (>=0.13.0)"]
 
 [[package]]
+name = "torchao"
+version = "0.10.0"
+description = "Package for applying ao techniques to GPU models"
+optional = false
+python-versions = "*"
+files = [
+    {file = "torchao-0.10.0-cp39-abi3-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:8d984f39246817ac43b46549759af6fa09b3bf70e00f0cff3bd48978777a10e6"},
+    {file = "torchao-0.10.0-py3-none-any.whl", hash = "sha256:9489b71259a7e29ee5ad391c333046adeb47888b6d84cfd0111adcf439f829a9"},
+]
+
+[package.extras]
+dev = ["bitsandbytes", "blobfile", "cmake (>=3.19.0,<4.0.0)", "diskcache", "expecttest", "fire", "hypothesis", "importlib_metadata", "lm_eval", "matplotlib", "ninja", "packaging", "pandas", "parameterized", "pre-commit", "pycocotools", "pytest (==7.4.0)", "ruff (==0.6.8)", "sentencepiece", "tabulate", "tiktoken", "tqdm", "transformers", "unittest-xml-reporting"]
+
+[[package]]
 name = "torchdata"
 version = "0.11.0"
 description = "Composable data loading modules for PyTorch"
@@ -2791,4 +2805,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "3cf355babea4c7fb91839fa6c09f30e84bd8d248d114196f98aa8088113e34e8"
+content-hash = "d93462d7e5b2b506c9224e37cd4a23b6b25fdd986195cb86c9f6c7f1eaf45511"

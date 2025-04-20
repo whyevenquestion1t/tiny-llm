@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "mini-llm"
+name = "tiny-llm"
 version = "0.1.0"
 description = ""
 authors = ["Alex Chi Z <iskyzh@gmail.com>"]
@@ -24,7 +24,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [project]
-name = "mini-llm"
+name = "tiny-llm"
 version = "0.1.0"
 
 [tool.pytest.ini_options]

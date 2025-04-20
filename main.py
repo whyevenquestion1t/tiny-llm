@@ -2,8 +2,12 @@ from mlx_lm import load, generate
 from mlx_lm.sample_utils import make_sampler, make_logits_processors
 
 model, tokenizer = load(
-    "Qwen/Qwen2-0.5B-Instruct-MLX", tokenizer_config={"eos_token": "<|im_end|>"}
+    "Qwen/Qwen2-7B-Instruct-MLX", tokenizer_config={"eos_token": "<|im_end|>"}
 )
+
+print(model)
+
+print(tokenizer._tokenizer)
 
 prompt = "Give me a short introduction to large language model."
 messages = [

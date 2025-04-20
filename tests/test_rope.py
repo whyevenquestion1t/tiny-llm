@@ -1,8 +1,8 @@
 import pytest
 import mlx.core as mx
 import torch
-from mini_llm.funcs import *
-from mini_llm.layers import *
+from tiny_llm.funcs import *
+from tiny_llm.layers import *
 import numpy as np
 from .utils import *
 import torchtune

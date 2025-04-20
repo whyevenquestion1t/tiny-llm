@@ -1,7 +1,8 @@
 import pytest
 import mlx.core as mx
 import torch
-from mini_llm import attention, softmax, MultiHeadAttention
+from mini_llm.funcs import scaled_dot_product_attention, softmax
+from mini_llm.layers import MultiHeadAttention
 import numpy as np
 
 AVAILABLE_STREAMS = [mx.cpu, mx.gpu]
@@ -9,6 +10,7 @@ AVAILABLE_STREAMS_IDS = ["cpu", "gpu"]
 PRECISIONS = [np.float32, np.float16]
 PRECISION_IDS = ["f32", "f16"]
 TORCH_DEVICE = torch.device("cpu")
+
 
 def assert_allclose(a: mx.array, b: torch.Tensor, precision: np.dtype):
     a = np.array(a)
@@ -58,10 +60,40 @@ def test_attention(stream: mx.Stream, precision: np.dtype):
             torch.tensor(key, device=TORCH_DEVICE),
             torch.tensor(value, device=TORCH_DEVICE),
         )
-        user_output = attention(
+        user_output = scaled_dot_product_attention(
             mx.array(query),
             mx.array(key),
             mx.array(value),
+            stream=stream,
+        )
+        assert_allclose(user_output, reference_output, precision=precision)
+
+
+@pytest.mark.parametrize("stream", AVAILABLE_STREAMS, ids=AVAILABLE_STREAMS_IDS)
+@pytest.mark.parametrize("precision", PRECISIONS, ids=PRECISION_IDS)
+def test_attention_with_attn_mask(stream: mx.Stream, precision: np.dtype):
+    BATCH_SIZE = 3
+    DIM_N = 4
+    DIM_M = 5
+    for _ in range(100):
+        query = np.random.rand(BATCH_SIZE, DIM_N, DIM_M).astype(precision)
+        key = np.random.rand(BATCH_SIZE, DIM_N, DIM_M).astype(precision)
+        value = np.random.rand(BATCH_SIZE, DIM_N, DIM_M).astype(precision)
+        scale = 0.8
+        attn_mask = np.random.rand(BATCH_SIZE, DIM_N, DIM_N).astype(precision)
+        reference_output = torch.nn.functional.scaled_dot_product_attention(
+            torch.tensor(query, device=TORCH_DEVICE),
+            torch.tensor(key, device=TORCH_DEVICE),
+            torch.tensor(value, device=TORCH_DEVICE),
+            scale=scale,
+            attn_mask=torch.tensor(attn_mask, device=TORCH_DEVICE),
+        )
+        user_output = scaled_dot_product_attention(
+            mx.array(query),
+            mx.array(key),
+            mx.array(value),
+            scale=scale,
+            attn_mask=mx.array(attn_mask),
             stream=stream,
         )
         assert_allclose(user_output, reference_output, precision=precision)

@@ -9,6 +9,7 @@ readme = "README.md"
 python = "^3.12"
 mlx = "^0.25.0"
 torch = "^2.6.0"
+mlx-lm = "^0.23.0"
 
 
 [tool.poetry.group.dev.dependencies]

@@ -1,9 +1,16 @@
 # tiny-llm
 
-LLM serving using MLX. The codebase only uses MLX array/matrix APIs and all other stuff is built from scratch.
+LLM serving using MLX. The codebase only uses MLX array/matrix APIs.
 
 We test the implementation against PyTorch's CPU implementation to ensure correctness. The main codebase uses MLX
-instead of PyTorch because nowadays it's easier to get an Apple Silicon MacBook than an NVIDIA GPU.
+instead of PyTorch because nowadays it's easier to get an Apple Silicon MacBook than an NVIDIA GPU. In theory you can
+implement everything using PyTorch tensor APIs, but we didn't have the test infra to support that.
+
+The goal is to learn the techniques behind efficiently serving an LLM model (i.e., Qwen2 models). We start with serving
+the model with only Python APIs in week 1, optimize it in week 2 by implementing C++/Metal custom kernels, and further
+optimize it to serve with high throughput in week 3.
+
+TBD: implement a leaderboard service?
 
 ## Usage
 
@@ -47,24 +54,52 @@ x: N x L x D
 D = num_heads x head_dim
 ```
 
+**References**
+
 * Annotated Transformer https://nlp.seas.harvard.edu/annotated-transformer/
 * PyTorch API https://pytorch.org/docs/stable/generated/torch.nn.MultiheadAttention.html
 * MLX API https://ml-explore.github.io/mlx/build/html/python/nn/_autosummary/mlx.nn.MultiHeadAttention.html
 
-### Day 3: Grouped Query Attention
+### Day 3: RoPE Embedding
+
+**References**
+
+* https://pytorch.org/torchtune/stable/generated/torchtune.modules.RotaryPositionalEmbeddings.html
+* https://github.com/pytorch/torchtune/blob/main/torchtune/modules/position_embeddings.py
+* https://github.com/vllm-project/vllm/blob/main/vllm/model_executor/layers/rotary_embedding.py
+* https://ml-explore.github.io/mlx/build/html/python/nn/_autosummary/mlx.nn.RoPE.html
+* https://arxiv.org/abs/2104.09864
+
+### Day 4: Grouped Query Attention
 
 The Qwen2 models use Grouped Query Attention (GQA). GQA allows different dimensions for query and key/value.
+
+**References**
 
 * Qwen layers implementation in mlx-lm https://github.com/ml-explore/mlx-lm/blob/main/mlx_lm/models/qwen2.py
 * PyTorch API (the case where enable_gqa=True) https://pytorch.org/docs/stable/generated/torch.nn.functional.scaled_dot_product_attention.html
 * torchtune.modules.MultiHeadAttention https://pytorch.org/torchtune/0.3/generated/torchtune.modules.MultiHeadAttention.html
 * https://arxiv.org/abs/2305.13245v1
 
-### Day 4: RoPE Embedding
+### Day 5: MLP
 
-Positional embedding
+RMSNorm needs to be accumulated over float32
 
-* https://pytorch.org/torchtune/stable/generated/torchtune.modules.RotaryPositionalEmbeddings.html
-* https://github.com/vllm-project/vllm/blob/main/vllm/model_executor/layers/rotary_embedding.py
-* https://ml-explore.github.io/mlx/build/html/python/nn/_autosummary/mlx.nn.RoPE.html
-* https://arxiv.org/abs/2104.09864
+* Qwen layers implementation in mlx-lm https://github.com/ml-explore/mlx-lm/blob/main/mlx_lm/models/qwen2.py
+* SiLU https://pytorch.org/docs/stable/generated/torch.nn.SiLU.html
+* Note that you will need to preserve precision of logistic sigmoid by computing it with `1/(1+exp(-x))`.
+* RMSNorm
+
+### Day 6: Transformer Block
+
+
+
+### Day 7: Load the Model
+
+## Week 2
+
+Quantization, implement softmax/linear/silu kernels, implement attention kernels, key-value cache and compression.
+
+## Week 3
+
+Continuous batching, OpenAPI HTTP endpoint, integrate with other services.

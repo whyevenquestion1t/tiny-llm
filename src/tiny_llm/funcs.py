@@ -20,7 +20,7 @@ def scaled_dot_product_attention(
 
     query: batch_size x
     """
-    factor = 1 / math.sqrt(query.shape[-1]) if scale is None else scale
+    factor = mx.rsqrt(query.shape[-1]) if scale is None else scale
     scores = mx.matmul(query, key.swapaxes(-2, -1)) * factor
     if mask is not None:
         scores = scores + mask
@@ -39,7 +39,7 @@ def scaled_dot_product_attention_grouped(
 
     query: batch_size x
     """
-    factor = 1 / math.sqrt(query.shape[-1]) if scale is None else scale
+    factor = mx.rsqrt(query.shape[-1]) if scale is None else scale
     expected_shape = query.shape
     query = query.reshape(-1, query.shape[-3], query.shape[-2], query.shape[-1])
     key = key.reshape(-1, key.shape[-3], key.shape[-2], key.shape[-1])
@@ -55,7 +55,9 @@ def scaled_dot_product_attention_grouped(
     if mask is not None:
         mask = mask.reshape(-1, H, n_repeats, mask.shape[-2], mask.shape[-1])
         scores = scores + mask
-    result = mx.matmul(softmax(scores, axis=-1), value)
+    result = mx.matmul(
+        softmax(scores.astype(mx.float32), axis=-1).astype(scores.dtype), value
+    )
     return result.reshape(expected_shape)
 
 
@@ -68,3 +70,7 @@ def linear(
         return mx.matmul(x, w.T) + bias
     else:
         return mx.matmul(x, w.T)
+
+
+def silu(x: mx.array) -> mx.array:
+    return x / (1 + mx.exp(-x))

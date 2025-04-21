@@ -1,19 +1,20 @@
 # tiny-llm
 
-Still WIP. Very early stage.
-
-LLM serving using MLX. The codebase is solely (almost!) based on MLX array/matrix APIs without any high-level neural network APIs.
+Still WIP and in very early stage. A tutorial on LLM serving using MLX. The codebase is solely (almost!)
+based on MLX array/matrix APIs without any high-level neural network APIs.
 
 We test the implementation against PyTorch's CPU implementation to ensure correctness. The main codebase uses MLX
 instead of PyTorch because nowadays it's easier to get an Apple Silicon MacBook than an NVIDIA GPU. In theory you can
 implement everything using PyTorch tensor APIs, but we didn't have the test infra to support that.
 
-(TODO: maybe we should test against MLX? PyTorch APIs sometimes don't align with MLX; but I also want to ensure the computation
-precision is enough to load any model directly from PyTorch tensors without converting to MLX format.)
+<small>(TODO: maybe we should test against MLX? PyTorch APIs sometimes don't align with MLX; but I also want to ensure the computation
+precision is enough to load any model directly from PyTorch tensors without converting to MLX format.)</small>
 
-The goal is to learn the techniques behind efficiently serving an LLM model (i.e., Qwen2 models). We start with serving
-the model with only Python APIs in week 1, optimize it in week 2 by implementing C++/Metal custom kernels, and further
-optimize it to serve with high throughput by batching in week 3.
+The goal is to learn the techniques behind efficiently serving an LLM model (i.e., Qwen2 models).
+
+* Week 1: serve Qwen2 with purely Python APIs. No fancy optimizations, just Python.
+* Week 2: optimizations, implement C++/Metal custom kernels to make the model run faster.
+* Week 3: more optimizations, batch the requests to serve the model with high throughput.
 
 TBD: implement a leaderboard service?
 
@@ -26,6 +27,10 @@ poetry run python main.py
 ```
 
 ## Week 1: LLM from Scratch
+
+Instead of me explaining everything in this tutorial, it works in a different way: I collect all the materials, blog posts, and source
+code I've read when implementing the components. There's API specification and test infra to compare the result with PyTorch/MLX in the
+repo. You may read the materials and implement the components :)
 
 ### Day 1: Attention is All You Need
 

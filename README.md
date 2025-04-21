@@ -7,8 +7,8 @@ We test the implementation against PyTorch's CPU implementation to ensure correc
 instead of PyTorch because nowadays it's easier to get an Apple Silicon MacBook than an NVIDIA GPU. In theory you can
 implement everything using PyTorch tensor APIs, but we didn't have the test infra to support that.
 
-<small>(TODO: maybe we should test against MLX? PyTorch APIs sometimes don't align with MLX; but I also want to ensure the computation
-precision is enough to load any model directly from PyTorch tensors without converting to MLX format.)</small>
+<sup><sub>(TODO: maybe we should test against MLX? PyTorch APIs sometimes don't align with MLX; but I also want to ensure the computation
+precision is enough to load any model directly from PyTorch tensors without converting to MLX format.)</sub></sup>
 
 The goal is to learn the techniques behind efficiently serving an LLM model (i.e., Qwen2 models).
 

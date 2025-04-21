@@ -22,6 +22,7 @@ TBD: implement a leaderboard service?
 ```bash
 poetry install
 poetry run pytest
+poetry run python main.py
 ```
 
 ## Week 1: LLM from Scratch

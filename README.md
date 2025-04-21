@@ -1,14 +1,19 @@
 # tiny-llm
 
-LLM serving using MLX. The codebase only uses MLX array/matrix APIs.
+Still WIP. Very early stage.
+
+LLM serving using MLX. The codebase is solely (almost!) based on MLX array/matrix APIs without any high-level neural network APIs.
 
 We test the implementation against PyTorch's CPU implementation to ensure correctness. The main codebase uses MLX
 instead of PyTorch because nowadays it's easier to get an Apple Silicon MacBook than an NVIDIA GPU. In theory you can
 implement everything using PyTorch tensor APIs, but we didn't have the test infra to support that.
 
+(TODO: maybe we should test against MLX? PyTorch APIs sometimes don't align with MLX; but I also want to ensure the computation
+precision is enough to load any model directly from PyTorch tensors without converting to MLX format.)
+
 The goal is to learn the techniques behind efficiently serving an LLM model (i.e., Qwen2 models). We start with serving
 the model with only Python APIs in week 1, optimize it in week 2 by implementing C++/Metal custom kernels, and further
-optimize it to serve with high throughput in week 3.
+optimize it to serve with high throughput by batching in week 3.
 
 TBD: implement a leaderboard service?
 
@@ -87,14 +92,25 @@ RMSNorm needs to be accumulated over float32
 
 * Qwen layers implementation in mlx-lm https://github.com/ml-explore/mlx-lm/blob/main/mlx_lm/models/qwen2.py
 * SiLU https://pytorch.org/docs/stable/generated/torch.nn.SiLU.html
-* Note that you will need to preserve precision of logistic sigmoid by computing it with `1/(1+exp(-x))`.
-* RMSNorm
+* RMSNorm (note that it needs to accumulate at float32)
 
 ### Day 6: Transformer Block
 
-
+* Qwen layers implementation in mlx-lm https://github.com/ml-explore/mlx-lm/blob/main/mlx_lm/models/qwen2.py
 
 ### Day 7: Load the Model
+
+We will use mlx-lm's loader to load the model. We will _steal_ the loaded parameters from the mlx model and
+plug it into our own operators.
+
+* Qwen layers implementation in mlx-lm https://github.com/ml-explore/mlx-lm/blob/main/mlx_lm/models/qwen2.py
+
+Run `python main.py` and it should give you a reasonable response.
+
+On my M4 Pro Mac Mini, my implementation gives 17 tokens per sec on Metal, versus 50 tokens per sec from the mlx-lm
+Qwen2 implementation. Sadly, it also takes 4x memory than using the mlx-lm components as it does not support computation
+over quantized parameters.
+
 
 ## Week 2
 

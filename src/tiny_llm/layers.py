@@ -10,6 +10,8 @@ from .funcs import (
     silu,
 )
 
+# TODO: add license for those heavily based on mlx-lm/PyTorch
+
 
 class MultiHeadAttention:
     def __init__(
@@ -114,26 +116,55 @@ class Qwen2MultiHeadAttention:
     ) -> mx.array:
         B, L, _ = x.shape
         orig_dtype = x.dtype
-        projection_q = linear(x, self.wq, bias=self.bq).reshape(
-            B, L, self.num_heads, self.head_dim
-        ).astype(mx.float32)
-        projection_k = linear(x, self.wk, bias=self.bk).reshape(
-            B, L, self.num_kv_heads, self.head_dim
-        ).astype(mx.float32)
-        projection_v = linear(x, self.wv, bias=self.bv).reshape(
-            B, L, self.num_kv_heads, self.head_dim
-        ).astype(mx.float32)
+        projection_q = (
+            linear(x, self.wq, bias=self.bq)
+            .reshape(B, L, self.num_heads, self.head_dim)
+            .astype(mx.float32)
+        )
+        projection_k = (
+            linear(x, self.wk, bias=self.bk)
+            .reshape(B, L, self.num_kv_heads, self.head_dim)
+            .astype(mx.float32)
+        )
+        projection_v = (
+            linear(x, self.wv, bias=self.bv)
+            .reshape(B, L, self.num_kv_heads, self.head_dim)
+            .astype(mx.float32)
+        )
         offset = cache.offset
-        projection_q = self.rope(projection_q, offset=slice(offset, offset + L))
-        projection_k = self.rope(projection_k, offset=slice(offset, offset + L))
-        assert projection_q.dtype == mx.float32
-        assert projection_k.dtype == mx.float32
-        assert projection_v.dtype == mx.float32
+        # projection_q = self.rope(projection_q, offset=slice(offset, offset + L))
+        # projection_k = self.rope(projection_k, offset=slice(offset, offset + L))
+        # assert projection_q.dtype == mx.float32
+        # assert projection_k.dtype == mx.float32
+        # assert projection_v.dtype == mx.float32
         projection_q = projection_q.transpose(0, 2, 1, 3)
         projection_k = projection_k.transpose(0, 2, 1, 3)
         projection_v = projection_v.transpose(0, 2, 1, 3)
+        import mlx
+
+        # TODO: fix this, my implementation of RoPE is not okay
+        projection_q = mlx.core.fast.rope(
+            projection_q,
+            dims=self.head_dim,
+            traditional=False,
+            base=self.rope.base,
+            scale=1.0,
+            offset=offset,
+        )
+        projection_k = mlx.core.fast.rope(
+            projection_k,
+            dims=self.head_dim,
+            traditional=False,
+            base=self.rope.base,
+            scale=1.0,
+            offset=offset,
+        )
+        # TODO: it is possible to get a sensible result without using a kv-cache? Otherwise we have to include kv-cache in week 1.
+        # mlx-lm's KvCache seems to do more than just caching, we could extract something out of it.
         projection_k, projection_v = cache.update_and_fetch(projection_k, projection_v)
-        assert projection_k.dtype == mx.float32
+        assert (
+            projection_k.dtype == mx.float32
+        )  # TODO: can we use float16? also a test framework to ensure all data types are casted correctly.
         assert projection_v.dtype == mx.float32
         x = scaled_dot_product_attention_grouped(
             projection_q,
@@ -164,7 +195,8 @@ class RoPE:
             [mx.cos(freqs), mx.sin(freqs)],
             axis=-1,
         )
-        assert self.basis.shape == (seq_len,half_dims, 2)
+        self.base = base
+        assert self.basis.shape == (seq_len, half_dims, 2)
         assert self.basis.dtype == mx.float32
 
     def __call__(
@@ -219,6 +251,7 @@ class RMSNorm:
         self.weight = weight.astype(mx.float32)
 
     def __call__(self, x: mx.array) -> mx.array:
+        # TODO: tests to ensure the precision of this function
         orig_dtype = x.dtype
         x = x.astype(mx.float32)
         return (
@@ -362,11 +395,7 @@ class Qwen2Model:
     ) -> mx.array:
         h = self.embed_tokens(inputs)
         for layer in range(self.num_hidden_layers):
-            # if layer >= 5:
             h = self.layers_inner[layer](h, None, cache[layer])
-            # else:
-            # h = self.mlx_model.layers[layer](h, None, cache[layer])
-            # assert h.dtype == self.precision, f"h.dtype {h.dtype} != self.precision {self.precision} at layer {layer}"
         h = self.norm(h)
         return self.lm_head(h)
 

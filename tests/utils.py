@@ -11,13 +11,18 @@ TORCH_DEVICE = torch.device("cpu")
 
 def assert_allclose(
     a: mx.array,
-    b: torch.Tensor,
+    b: torch.Tensor | mx.array,
     precision: np.dtype,
     rtol: float | None = None,
     atol: float | None = None,
 ):
     a = np.array(a)
-    b = b.cpu().numpy()
+    if isinstance(b, torch.Tensor):
+        b = b.cpu().numpy()
+    elif isinstance(b, mx.array):
+        b = np.array(b)
+    else:
+        raise ValueError(f"Unsupported type: {type(b)}")
     if precision == np.float32:
         rtol = rtol or 1.0e-5
         atol = atol or 1.0e-8

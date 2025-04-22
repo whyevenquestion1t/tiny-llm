@@ -23,7 +23,7 @@ with mx.stream(mx.gpu):
     sampler = make_sampler(top_p=0.8, temp=0.7)
     logits_processors = make_logits_processors(repetition_penalty=1.05)
     response = generate(
-        tiny_llm_model, # replace it with `mlx_model` to use the official implementation
+        tiny_llm_model,  # replace it with `mlx_model` to use the official implementation
         tokenizer,
         prompt=text,
         verbose=True,

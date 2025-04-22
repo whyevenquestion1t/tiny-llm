@@ -1,7 +1,8 @@
 # tiny-llm
 
-Still WIP and in very early stage. A tutorial on LLM serving using MLX. The codebase is solely (almost!)
-based on MLX array/matrix APIs without any high-level neural network APIs.
+Still WIP and in very early stage. A tutorial on LLM serving using MLX for system engineers. The codebase
+is solely (almost!) based on MLX array/matrix APIs without any high-level neural network APIs, so that we
+can build the model serving infrastructure from scratch and dig into the optimizations.
 
 We test the implementation against PyTorch's CPU implementation to ensure correctness. The main codebase uses MLX
 instead of PyTorch because nowadays it's easier to get an Apple Silicon MacBook than an NVIDIA GPU. In theory you can
@@ -73,6 +74,8 @@ D = num_heads x head_dim
 
 ### Day 3: RoPE Embedding
 
+Note there are traditional and non-traditional ropes.
+
 **References**
 
 * https://pytorch.org/torchtune/stable/generated/torchtune.modules.RotaryPositionalEmbeddings.html
@@ -109,6 +112,8 @@ RMSNorm needs to be accumulated over float32
 We will use mlx-lm's loader to load the model. We will _steal_ the loaded parameters from the mlx model and
 plug it into our own operators.
 
+### Day 8 (why we have 8 days a week??): Generate Response from Models
+
 * Qwen layers implementation in mlx-lm https://github.com/ml-explore/mlx-lm/blob/main/mlx_lm/models/qwen2.py
 
 Run `python main.py` and it should give you a reasonable response.
@@ -117,10 +122,9 @@ On my M4 Pro Mac Mini, my implementation gives 17 tokens per sec on Metal, versu
 Qwen2 implementation. Sadly, it also takes 4x memory than using the mlx-lm components as it does not support computation
 over quantized parameters.
 
-
 ## Week 2
 
-Quantization, implement softmax/linear/silu kernels, implement attention kernels, key-value cache and compression.
+Quantization, implement softmax/linear/silu kernels, implement attention kernels, key-value cache and compression, attention masks, prompt cache.
 
 ## Week 3
 

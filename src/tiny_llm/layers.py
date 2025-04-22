@@ -370,7 +370,7 @@ class Qwen2Model:
             weight=mlx_model.model.norm.weight.astype(precision),
             eps=mlx_model.args.rms_norm_eps,
         )
-        self.lm_head = mlx_model.lm_head
+        self.w_lm_head = dequantize_linear(mlx_model.lm_head)
         self.mlx_model = mlx_model
 
     def __call__(
@@ -383,7 +383,7 @@ class Qwen2Model:
         for layer in range(self.num_hidden_layers):
             h = self.layers_inner[layer](h, None, cache[layer])
         h = self.norm(h)
-        return self.lm_head(h)
+        return linear(h, self.w_lm_head)
 
     def sanitize(self, weights: dict):
         assert False, "not implemented"

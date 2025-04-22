@@ -30,4 +30,6 @@ with mx.stream(mx.gpu):
         sampler=sampler,
         logits_processors=logits_processors,
         max_tokens=512,
+        prompt_cache=None
     )
+

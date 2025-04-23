@@ -55,8 +55,6 @@ You may use `softmax` provided by mlx and implement it later in week 2.
 * MLX API https://ml-explore.github.io/mlx/build/html/python/_autosummary/mlx.core.fast.scaled_dot_product_attention.html
 * https://arxiv.org/abs/1706.03762
 
-### Day 2: Multi-Head Attention
-
 Implement `MultiHeadAttention`. The layer takes a batch of vectors `x`, maps it through the K,V,Q weight matrixes, and
 use the attention function we implemented in day 1 to compute the result. The output needs to be mapped using the O
 weight matrix. You will also need to implement the `linear` function.
@@ -72,7 +70,7 @@ D = num_heads x head_dim
 * PyTorch API https://pytorch.org/docs/stable/generated/torch.nn.MultiheadAttention.html
 * MLX API https://ml-explore.github.io/mlx/build/html/python/nn/_autosummary/mlx.nn.MultiHeadAttention.html
 
-### Day 3: RoPE Embedding
+### Day 2: RoPE Embedding
 
 Note there are traditional and non-traditional ropes.
 
@@ -84,7 +82,7 @@ Note there are traditional and non-traditional ropes.
 * https://ml-explore.github.io/mlx/build/html/python/nn/_autosummary/mlx.nn.RoPE.html
 * https://arxiv.org/abs/2104.09864
 
-### Day 4: Grouped Query Attention
+### Day 3: Grouped Query Attention
 
 The Qwen2 models use Grouped Query Attention (GQA). GQA allows different dimensions for query and key/value.
 
@@ -95,7 +93,7 @@ The Qwen2 models use Grouped Query Attention (GQA). GQA allows different dimensi
 * torchtune.modules.MultiHeadAttention https://pytorch.org/torchtune/0.3/generated/torchtune.modules.MultiHeadAttention.html
 * https://arxiv.org/abs/2305.13245v1
 
-### Day 5: MLP
+### Day 4: RMSNorm and MLP
 
 RMSNorm needs to be accumulated over float32
 
@@ -103,16 +101,16 @@ RMSNorm needs to be accumulated over float32
 * SiLU https://pytorch.org/docs/stable/generated/torch.nn.SiLU.html
 * RMSNorm (note that it needs to accumulate at float32)
 
-### Day 6: Transformer Block
+### Day 5: Transformer Block
 
 * Qwen layers implementation in mlx-lm https://github.com/ml-explore/mlx-lm/blob/main/mlx_lm/models/qwen2.py
 
-### Day 7: Load the Model
+### Day 6: Load the Model
 
 We will use mlx-lm's loader to load the model. We will _steal_ the loaded parameters from the mlx model and
 plug it into our own operators.
 
-### Day 8 (why we have 8 days a week??): Generate Response from Models
+### Day 7: Generate Responses
 
 * Qwen layers implementation in mlx-lm https://github.com/ml-explore/mlx-lm/blob/main/mlx_lm/models/qwen2.py
 

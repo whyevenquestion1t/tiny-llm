@@ -111,6 +111,7 @@ class Qwen2MultiHeadAttention:
     def __call__(
         self,
         x: mx.array,
+        offset: int,
         mask: mx.array | None = None,
         cache: KVCache | None = None,
     ) -> mx.array:
@@ -131,7 +132,7 @@ class Qwen2MultiHeadAttention:
             .reshape(B, L, self.num_kv_heads, self.head_dim)
             .astype(mx.float32)
         )
-        offset = cache.offset
+        # offset = cache.offset
         projection_q = self.rope(projection_q, offset=slice(offset, offset + L))
         projection_k = self.rope(projection_k, offset=slice(offset, offset + L))
         projection_q = projection_q.transpose(0, 2, 1, 3)
@@ -139,7 +140,7 @@ class Qwen2MultiHeadAttention:
         projection_v = projection_v.transpose(0, 2, 1, 3)
         # TODO: it is possible to get a sensible result without using a kv-cache? Otherwise we have to include kv-cache in week 1.
         # mlx-lm's KvCache seems to do more than just caching, we could extract something out of it.
-        projection_k, projection_v = cache.update_and_fetch(projection_k, projection_v)
+        # projection_k, projection_v = cache.update_and_fetch(projection_k, projection_v)
         assert (
             projection_k.dtype == mx.float32
         )  # TODO: can we use float16? also a test framework to ensure all data types are casted correctly.
@@ -295,17 +296,18 @@ class Qwen2TransformerBlock:
     def __call__(
         self,
         x: mx.array,
+        offset: int,
         mask: mx.array | None = None,
         cache: KVCache | None = None,
     ) -> mx.array:
-        r = self.self_attn(self.input_layernorm(x), mask, cache)
+        r = self.self_attn(self.input_layernorm(x), offset, mask, cache)
         h = x + r
         r = self.mlp(self.post_attention_layernorm(h))
         out = h + r
         return out
 
 
-def dequantize_linear(mx_layer: Any) -> tuple[mx.array, mx.array | None]:
+def dequantize_linear(mx_layer: Any) -> mx.array:
     w = mx.dequantize(
         mx_layer.weight,
         mx_layer.scales,
@@ -315,6 +317,14 @@ def dequantize_linear(mx_layer: Any) -> tuple[mx.array, mx.array | None]:
     )
     return w
 
+class Embedding:
+    def __init__(self, vocab_size: int, embedding_dim: int, weight: mx.array):
+        self.vocab_size = vocab_size
+        self.embedding_dim = embedding_dim
+        self.weight = weight
+
+    def __call__(self, x: mx.array) -> mx.array:
+        return self.weight[x, :]
 
 class Qwen2Model:
     def __init__(
@@ -324,11 +334,16 @@ class Qwen2Model:
         self.num_hidden_layers = mlx_model.args.num_hidden_layers
         self.hidden_size = mlx_model.args.hidden_size
         self.vocab_size = mlx_model.args.vocab_size
-        assert self.vocab_size > 0
-        self.embed_tokens = mlx_model.model.embed_tokens
-        self.layers_inner = []
         precision = mx.float16
         self.precision = precision
+
+        self.embedding = Embedding(
+            vocab_size=self.vocab_size,
+            embedding_dim=self.hidden_size,
+            weight=dequantize_linear(mlx_model.model.embed_tokens).astype(precision),
+        )
+        self.layers_inner = []
+
 
         for i in range(mlx_model.args.num_hidden_layers):
             wq = dequantize_linear(mlx_model.model.layers[i].self_attn.q_proj)
@@ -376,12 +391,13 @@ class Qwen2Model:
     def __call__(
         self,
         inputs: mx.array,
+        offset: int,
         mask: mx.array | None = None,
         cache: KVCache | None = None,
     ) -> mx.array:
-        h = self.embed_tokens(inputs)
+        h = self.embedding(inputs)
         for layer in range(self.num_hidden_layers):
-            h = self.layers_inner[layer](h, None, cache[layer])
+            h = self.layers_inner[layer](h, offset, None, cache[layer] if cache else None)
         h = self.norm(h)
         return linear(h, self.w_lm_head)
 

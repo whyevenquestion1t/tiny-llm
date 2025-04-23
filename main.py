@@ -16,20 +16,26 @@ with mx.stream(mx.gpu):
         {"role": "system", "content": "You are a helpful assistant."},
         {"role": "user", "content": prompt},
     ]
-    text = tokenizer.apply_chat_template(
+    prompt = tokenizer.apply_chat_template(
         messages, tokenize=False, add_generation_prompt=True
     )
-
-    sampler = make_sampler(top_p=0.8, temp=0.7)
-    logits_processors = make_logits_processors(repetition_penalty=1.05)
-    response = generate(
-        tiny_llm_model,  # replace it with `mlx_model` to use the official implementation
-        tokenizer,
-        prompt=text,
-        verbose=True,
-        sampler=sampler,
-        logits_processors=logits_processors,
-        max_tokens=512,
-        prompt_cache=None
-    )
-
+    def _step(model, y, offset):
+        logits = model(y[None], offset)
+        logits = logits[:, -1, :]
+        logprobs = logits - mx.logsumexp(logits, keepdims=True)
+        sampler = lambda x: mx.argmax(x, axis=-1)
+        y = sampler(logprobs)
+        return y, logprobs.squeeze(0)
+    # prefill with the prompt
+    tokens = mx.array(tokenizer.encode(prompt, add_special_tokens=False))
+    offset = tokens.size
+    detokenizer = tokenizer.detokenizer
+    detokenizer.reset()
+    # generate
+    while True:
+        token, _ = _step(tiny_llm_model, tokens, offset)
+        tokens = mx.concat([tokens, token])
+        if token.item() == tokenizer.eos_token_id:
+            break
+        detokenizer.add_token(token.item())
+        print(detokenizer.last_segment, end="", flush=True)

@@ -1,17 +1,27 @@
 # LLM Serving in a Week
 
 [Preface](./preface.md)
-[Setting Up the Environment]()
+[Setting Up the Environment](./setup.md)
 
 ---
 
-- [Week 1: From Matmul to Text]()
-    - [Attention and Multi-Head Attention, Linear]()
+- [Week 1: From Matmul to Text](./week1-overview.md)
+    - [Attention and Multi-Head Attention]()
     - [Positional Embeddings and RoPE]()
-    - [Grouped/Multi Query Attention, Embedding, Silu]()
-    - [Multilayer Perceptron Layer and Transformer, RMSNorm]()
-    - [Wiring and Loading the Model, Dequantize]()
-    - [Tokenize and Generating Response]()
+    - [Grouped/Multi Query Attention]()
+    - [Multilayer Perceptron Layer and Transformer]()
+    - [Wiring the Qwen2 Model]()
+    - [Loading the Model]()
+    - [Generating the Response]()
+    <!--
+    - [Attention and Multi-Head Attention](./week1-01-attention.md)
+    - [Positional Embeddings and RoPE](./week1-02-positional-embeddings.md)
+    - [Grouped/Multi Query Attention](./week1-03-gqa.md)
+    - [Multilayer Perceptron Layer and Transformer](./week1-04-mlp-transformer.md)
+    - [Wiring the Qwen2 Model](./week1-05-model-1.md)
+    - [Loading the Model](./week1-06-model-2.md)
+    - [Generating the Response](./week1-07-generate.md)
+    -->
 
 - [Week 2: Optimizing]()
 

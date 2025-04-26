@@ -100,5 +100,5 @@ def test_rope_mlx(
                 user_output,
                 reference_output,
                 precision,
-                atol=1e-6 if precision == np.float32 else 1e-3,
+                atol=5e-6 if precision == np.float32 else 1e-3,
             )

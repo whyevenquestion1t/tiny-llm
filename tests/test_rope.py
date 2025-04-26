@@ -12,7 +12,9 @@ import torchtune
     "with_offset", [True, False], ids=["with_offset", "without_offset"]
 )
 @pytest.mark.parametrize("precision", PRECISIONS, ids=PRECISION_IDS)
-def test_rope_torch_week_1_day_2_task_1(stream: mx.Stream, with_offset: bool, precision: np.dtype):
+def test_rope_torch_week_1_day_2_task_1(
+    stream: mx.Stream, with_offset: bool, precision: np.dtype
+):
     BATCH_SIZE = 1
     NUM_HEADS = 8
     HEAD_DIM = 4
@@ -59,7 +61,9 @@ def test_rope_torch_week_1_day_2_task_1(stream: mx.Stream, with_offset: bool, pr
     "with_offset", [True, False], ids=["with_offset", "without_offset"]
 )
 @pytest.mark.parametrize(
-    "traditional", [True, False], ids=["traditional_week_1_day_2_task_1", "non_traditional_week_1_day_2_task_2"]
+    "traditional",
+    [True, False],
+    ids=["traditional_week_1_day_2_task_1", "non_traditional_week_1_day_2_task_2"],
 )
 @pytest.mark.parametrize("precision", PRECISIONS, ids=PRECISION_IDS)
 def test_rope_mlx(

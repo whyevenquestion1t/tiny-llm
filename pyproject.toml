@@ -20,8 +20,17 @@ numpy = "^2.2.4"
 ruff = "^0.11.6"
 
 [build-system]
-requires = ["poetry-core"]
+requires = [
+    "poetry-core",
+    "setuptools>=42",
+    "cmake>=3.25",
+    "mlx>=0.18.0",
+    "nanobind==2.4.0"
+]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.build]
+script = "build-extension.py"
 
 [project]
 name = "tiny-llm"

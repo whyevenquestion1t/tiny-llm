@@ -35,7 +35,9 @@ def test_attention_week_1_day_1_task_1(stream: mx.Stream, precision: np.dtype):
 @pytest.mark.parametrize(
     "qkv_shape", [True, False], ids=["with_seq_len", "without_seq_len"]
 )
-def test_attention_with_mask_week_1_day_1_task_1(stream: mx.Stream, precision: np.dtype, qkv_shape: bool):
+def test_attention_with_mask_week_1_day_1_task_1(
+    stream: mx.Stream, precision: np.dtype, qkv_shape: bool
+):
     with mx.stream(stream):
         BATCH_SIZE = 3
         SEQ_LEN = 10
@@ -72,7 +74,9 @@ def test_attention_with_mask_week_1_day_1_task_1(stream: mx.Stream, precision: n
 
 @pytest.mark.parametrize("stream", AVAILABLE_STREAMS, ids=AVAILABLE_STREAMS_IDS)
 @pytest.mark.parametrize("precision", PRECISIONS, ids=PRECISION_IDS)
-def test_multi_head_attention_week_1_day_1_task_2(stream: mx.Stream, precision: np.dtype):
+def test_multi_head_attention_week_1_day_1_task_2(
+    stream: mx.Stream, precision: np.dtype
+):
     with mx.stream(stream):
         SEQ_LEN = 11
         D = 9

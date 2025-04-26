@@ -8,6 +8,8 @@ We will use the Qwen2-7B-Instruct model for this week. As we need to dequantize 
 20GB of memory in week 1. If you do not have enough memory, you can consider using the smaller 0.5B model (we do not have
 infra to test it so you need to figure out things on your own unfortunately).
 
+The MLX version of the Qwen2-7B-Instruct model we downloaded in the setup is an int4 quantized version of the original bfloat16 model.
+
 ## What We will Cover
 
 * Attention, Multi-Head Attention, and Grouped/Multi Query Attention
@@ -44,5 +46,7 @@ utilize these resources to better understand the internals of the model and what
 - [Huggingface Transformers - Qwen2](https://github.com/huggingface/transformers/tree/main/src/transformers/models/qwen2)
 - [vLLM Qwen2](https://github.com/vllm-project/vllm/blob/main/vllm/model_executor/models/qwen2.py)
 - [mlx-lm Qwen2](https://github.com/ml-explore/mlx-lm/blob/main/mlx_lm/models/qwen2.py)
+- [Qwen2 Technical Report](https://arxiv.org/pdf/2407.10671)
+- [Qwen2.5 Technical Report](https://arxiv.org/pdf/2412.15115)
 
 {{#include copyright.md}}

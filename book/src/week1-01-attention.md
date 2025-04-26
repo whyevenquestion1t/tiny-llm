@@ -12,27 +12,15 @@ token embeddings. The output of the model is the most likely next token ID.
 [📚 Reading: LLM Inference, the Decode Phase](https://huggingface.co/learn/llm-course/chapter1/8)
 
 Back to the attention layer. The attention layer takes a query, a key, and a value. In a classic implementation, all
-of them are of the same shape: `N.. x H x L x D`.
+of them are of the same shape: `N.. x L x D`.
 
-`N..` is zero or some number of dimensions for batches. Within each of the batch, `H` is the number of heads, `L` is the
-sequence length, and `D` is the dimension of the embedding for a given head in the sequence.
+`N..` is zero or some number of dimensions for batches. Within each of the batch, `L` is the sequence length and `D` is
+the dimension of the embedding for a given head in the sequence.
 
-So, for example, if we have a sequence of 1024 tokens, where each of the token has a 4096-dimensional embedding. We split
-this 4096-dimensional embedding into 8 heads using the upper layer (i.e., multi-head attention layer), then each of the head
-will have a 512-dimensional embedding. For week 1, we assume each of the batch will only have one sequence. In this case,
-we will pass a tensor of the shape `1 x 8 x 1024 x 512` to the attention layer.
+So, for example, if we have a sequence of 1024 tokens, where each of the token has a 512-dimensional embedding (head_dim), 
+we will pass a tensor of the shape `N.. x 1024 x 512` to the attention layer.
 
 ## Task 1: Implement `scaled_dot_product_attention`
-
-Implement `scaled_dot_product_attention`. The function takes key, value, and query of the same dimensions.
-
-```
-K: N.. x H x L x D
-V: N.. x H x L x D
-Q: N.. x H x L x D
-```
-
-You may use `softmax` provided by mlx and implement it later in week 2.
 
 **📚 Readings**
 
@@ -41,38 +29,40 @@ You may use `softmax` provided by mlx and implement it later in week 2.
 * [MLX Scaled Dot Product Attention API](https://ml-explore.github.io/mlx/build/html/python/_autosummary/mlx.core.fast.scaled_dot_product_attention.html) (assume dim_k=dim_v=dim_q and H_k=H_v=H_q)
 * [Attention is All You Need](https://arxiv.org/abs/1706.03762)
 
-## Task 2: Implement `MultiHeadAttention`
-
-Implement `MultiHeadAttention`. The layer takes a batch of vectors `x`, maps it through the K, V, Q weight matrixes, and
-use the attention function we implemented in day 1 to compute the result. The output needs to be mapped using the O
-weight matrix. You will also need to implement the `linear` function.
-
-For `linear`, it takes a tensor of the shape `N.. x I`, and a weight matrix of the shape `O x I`, and a bias vector of
-the shape `O`. The output is of the shape `N.. x O`. `I` is the input dimension and `O` is the output dimension.
-
-For the `MultiHeadAttention` layer, the input tensor `x` has the shape `N x L x E`, where `E` is the dimension of the
-embedding for a given head in the sequence. The `K/Q/V` weight matrixes will map the tensor into key, value, and query
-separately, where the dimension `E` will be mapped into a dimension of size `H x D`. Then, you will need to reshape it
-to `H, D`
+Implement `scaled_dot_product_attention`. The function takes key, value, and query of the same dimensions.
 
 ```
-E is hidden_size or embed_dim or dims or model_dim
-H is num_heads
-D is head_dim
 L is seq_len, in PyTorch API it's S (source len)
+D is head_dim
 
-x: N x L x E
-w_q/k/v: E x (H x D)
-q/k/v = linear(x, w_q/w_k/w_v) = N x L x (H x D)
-then, reshape it into N x L x H x D then transpose it to get N x H x L x D as the input of the attention function.
-o = attention(q, k, v) = N x H x L x D
-w_o: (H x D) x O
-result = linear(reshaped o, w_o) = N x L x O
+K: N.. x L x D
+V: N.. x L x D
+Q: N.. x L x D
+output: N.. x L x D
 ```
 
-You can then directly split the `q/k/v` into `H` heads by reshaping the last dimension into `H x D` and apply the
-attention function on it. Note that the attention function takes `N.. x H x L x D` as input, so you will need to
-transpose it to get the right shape.
+You may use `softmax` provided by mlx and implement it later in week 2.
+
+Because we are always using the attention layer within the multi-head attention layer, the actual tensor shape when serving
+the model will be:
+
+```
+K: 1 x H x L x D
+V: 1 x H x L x D
+Q: 1 x H x L x D
+output: 1 x H x L x D
+```
+
+.. though the attention layer only cares about the last two dimensions. The test case will test any shape of the batching dimension.
+
+At the end of this task, you should be able to pass the following tests:
+
+```
+poetry run pytest tests -k test_attention_simple
+poetry run pytest tests -k test_attention_with_mask
+```
+
+## Task 2: Implement `MultiHeadAttention`
 
 **📚 Readings**
 
@@ -80,11 +70,36 @@ transpose it to get the right shape.
 * [PyTorch MultiHeadAttention API](https://pytorch.org/docs/stable/generated/torch.nn.MultiheadAttention.html) (assume dim_k=dim_v=dim_q and H_k=H_v=H_q)
 * [MLX MultiHeadAttention API](https://ml-explore.github.io/mlx/build/html/python/nn/_autosummary/mlx.nn.MultiHeadAttention.html) (assume dim_k=dim_v=dim_q and H_k=H_v=H_q)
 
+Implement `MultiHeadAttention`. The layer takes a batch of vectors `x`, maps it through the K, V, Q weight matrixes, and
+use the attention function we implemented in day 1 to compute the result. The output needs to be mapped using the O
+weight matrix.
+
+You will also need to implement the `linear` function first. For `linear`, it takes a tensor of the shape `N.. x I`, a weight matrix of the shape `O x I`, and a bias vector of the shape `O`. The output is of the shape `N.. x O`. `I` is the input dimension and `O` is the output dimension.
+
+For the `MultiHeadAttention` layer, the input tensor `x` has the shape `N x L x E`, where `E` is the dimension of the
+embedding for a given token in the sequence. The `K/Q/V` weight matrixes will map the tensor into key, value, and query
+separately, where the dimension `E` will be mapped into a dimension of size `H x D`, which means that the token embedding
+gets mapped into `H` heads, each with a dimension of `D`. You can directly reshape the tensor to split the `H x D` dimension
+into two dimensions of `H` and `D` to get `H` heads for the token. Then, apply the attention function to each of the head
+(this requires a transpose, using `swapaxes` in mlx). The attention function takes `N.. x H x L x D` as input so that it
+produces an output for each of the head of the token. Then, you can transpose it into `N.. x L x H x D` and reshape it
+so that all heads get merged back together with a shape of `N.. x L x (H x D)`. Map it through the output weight matrix to get
+the final output.
+
+```
+E is hidden_size or embed_dim or dims or model_dim
+H is num_heads
+D is head_dim
+L is seq_len, in PyTorch API it's S (source len)
+
+W_q/k/v: E x (H x D)
+output/x: N x L x E
+W_o: (H x D) x E
+```
+
 At the end of the day, you should be able to pass the following tests:
 
 ```
-poetry run pytest tests -k test_attention_simple
-poetry run pytest tests -k test_attention_with_mask
 poetry run pytest tests -k test_multi_head_attention
 ```
 

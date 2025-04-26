@@ -37,6 +37,8 @@ from `cos/sin_freqs`.
 ```
 output[0] = x[0] * cos_freqs[0] + x[1] * sin_freqs[0]
 output[1] = x[0] * -sin_freqs[0] + x[1] * cos_freqs[0]
+output[2] = x[2] * cos_freqs[1] + x[3] * sin_freqs[1]
+output[3] = x[2] * -sin_freqs[1] + x[3] * cos_freqs[1]
 ...and so on
 ```
 
@@ -56,13 +58,13 @@ poetry run pytest tests -k week_1_day_2_task_1 -v
 ## Task 2: Implement `RoPE` in the non-traditional form
 
 The Qwen2 model uses a non-traditional form of RoPE. In this form, the head embedding dimension is split into two halves,
-and the two halves are applied with different frequencies.
+and the two halves are applied with different frequencies. Let's say `x1 = x[.., :HALF_DIM]` and `x2 = x[.., HALF_DIM:]`.
 
 ```
-output[0] = x[0] * cos_freqs[0] + x[HALF_DIM] * sin_freqs[0]
-output[HALF_DIM] = x[0] * -sin_freqs[0] + x[HALF_DIM] * cos_freqs[0]
-output[1] = x[1] * cos_freqs[1] + x[HALF_DIM + 1] * sin_freqs[1]
-output[HALF_DIM + 1] = x[1] * -sin_freqs[1] + x[HALF_DIM + 1] * cos_freqs[1]
+output[0] = x1[0] * cos_freqs[0] + x2[0] * sin_freqs[0]
+output[HALF_DIM] = x1[0] * -sin_freqs[0] + x2[0] * cos_freqs[0]
+output[1] = x1[1] * cos_freqs[1] + x2[1] * sin_freqs[1]
+output[HALF_DIM + 1] = x1[1] * -sin_freqs[1] + x2[1] * cos_freqs[1]
 ...and so on
 ```
 

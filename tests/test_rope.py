@@ -1,7 +1,7 @@
 import pytest
 import mlx.core as mx
 import torch
-from tiny_llm.positional_encoding import *
+from .tiny_llm_base import *
 import numpy as np
 from .utils import *
 import torchtune

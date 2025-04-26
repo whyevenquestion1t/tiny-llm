@@ -1,5 +1,5 @@
 from mlx_lm import load
-from tiny_llm import Qwen2Model, simple_generate
+from tiny_llm_week1_ref import Qwen2Model, simple_generate
 import mlx.core as mx
 
 with mx.stream(mx.gpu):

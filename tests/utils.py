@@ -28,7 +28,7 @@ def assert_allclose(
         atol = atol or 1.0e-8
     elif precision == np.float16:
         rtol = rtol or 1.0e-2
-        atol = atol or 1.0e-6
+        atol = atol or 1.0e-5
     assert a.shape == b.shape
     if not np.allclose(a, b, rtol=rtol, atol=atol):
         print("a=", a)

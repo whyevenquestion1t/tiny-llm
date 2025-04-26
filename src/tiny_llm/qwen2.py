@@ -1,75 +1,11 @@
-import math
-from typing import Any, Optional
-
 import mlx.core as mx
-from mlx_lm.models.cache import KVCache
-from .funcs import (
-    linear,
-    scaled_dot_product_attention,
-    scaled_dot_product_attention_grouped,
-    silu,
-)
-
-# TODO: add license for those heavily based on mlx-lm/PyTorch
-
-
-class MultiHeadAttention:
-    def __init__(
-        self,
-        hidden_size: int,
-        num_heads: int,
-        wq: mx.array,
-        wk: mx.array,
-        wv: mx.array,
-        wo: mx.array,
-    ):
-        self.hidden_size = hidden_size
-        self.num_heads = num_heads
-        assert hidden_size % num_heads == 0
-        self.head_dim = hidden_size // num_heads
-        self.scale = mx.rsqrt(self.head_dim)
-        assert wq.shape == (hidden_size, num_heads * self.head_dim)
-        assert wk.shape == (hidden_size, num_heads * self.head_dim)
-        assert wv.shape == (hidden_size, num_heads * self.head_dim)
-        assert wo.shape == (num_heads * self.head_dim, hidden_size)
-        self.wq = wq
-        self.wk = wk
-        self.wv = wv
-        self.wo = wo
-
-    def __call__(
-        self,
-        query: mx.array,
-        key: mx.array,
-        value: mx.array,
-        mask: mx.array | None = None,
-    ) -> mx.array:
-        n_batches = query.shape[0]
-        batch_size = query.shape[1]
-        projection_q = (
-            linear(query, self.wq)
-            .reshape(n_batches, self.num_heads * batch_size, self.head_dim)
-            .transpose(1, 0, 2)
-        )
-        projection_k = (
-            linear(key, self.wk)
-            .reshape(n_batches, self.num_heads * batch_size, self.head_dim)
-            .transpose(1, 0, 2)
-        )
-        projection_v = (
-            linear(value, self.wv)
-            .reshape(n_batches, self.num_heads * batch_size, self.head_dim)
-            .transpose(1, 0, 2)
-        )
-        x = scaled_dot_product_attention(
-            projection_q,
-            projection_k,
-            projection_v,
-            scale=self.scale,
-            mask=mask,
-        )
-        x = x.transpose(1, 0, 2).reshape(n_batches, batch_size, self.hidden_size)
-        return linear(x, self.wo)
+from .basics import linear, silu
+from .attention import scaled_dot_product_attention_grouped
+from .layer_norm import RMSNorm
+from .positional_encoding import RoPE
+from typing import Any
+from .embedding import Embedding
+from .quantize import dequantize_linear
 
 
 class Qwen2MultiHeadAttention:
@@ -112,8 +48,6 @@ class Qwen2MultiHeadAttention:
         self,
         x: mx.array,
         offset: int,
-        mask: mx.array | None = None,
-        cache: KVCache | None = None,
     ) -> mx.array:
         B, L, _ = x.shape
         orig_dtype = x.dtype
@@ -150,66 +84,9 @@ class Qwen2MultiHeadAttention:
             projection_k,
             projection_v,
             scale=self.scale,
-            mask=mask,
         ).astype(orig_dtype)
         x = x.transpose(0, 2, 1, 3).reshape(B, L, self.hidden_size)
         return linear(x, self.wo)
-
-
-class RoPE:
-    def __init__(
-        self,
-        dims: int,
-        seq_len: int,
-        base: int = 10000,
-        traditional: bool = False,
-    ):
-        self.dims = dims
-        self.seq_len = seq_len
-        half_dims = dims // 2
-        inner = mx.arange(0, half_dims, dtype=mx.float32) / half_dims
-        freqs = mx.power(base, -inner)
-        t = mx.arange(seq_len)
-        freqs = mx.outer(t, freqs)
-        self.cos_freqs = mx.cos(freqs)
-        self.sin_freqs = mx.sin(freqs)
-        self.base = base
-        self.half_dims = half_dims
-        self.traditional = traditional
-    def __call__(
-        self, x: mx.array, offset: slice | None = None
-    ) -> tuple[mx.array, mx.array]:
-        # input x: (b, s, n_heads, head_dim)
-        *N, S, H, D = x.shape
-        # if offset is not None:
-        #     assert len(offset) == S, f"offset {len(offset)} must be of length {s}"
-        cos_basis = (
-            self.cos_freqs[:S, :] if offset is None else self.cos_freqs[offset, :]
-        )
-        sin_basis = (
-            self.sin_freqs[:S, :] if offset is None else self.sin_freqs[offset, :]
-        )
-        # reshape x: (b, s, n_heads, head_dim // 2, 2)
-        if self.traditional:
-            x = x.reshape(*N, S, H, self.half_dims, 2)
-            x1 = x[..., 0]
-            x2 = x[..., 1]
-        else:
-            x1 = x[..., 0:self.half_dims]
-            x2 = x[..., self.half_dims:self.dims]
-        # reshape basis: (1, s, 1, dims // 2, 2)
-        cos_basis = cos_basis.reshape(S, 1, self.half_dims)
-        sin_basis = sin_basis.reshape(S, 1, self.half_dims)
-        # manually doing complex number multiplication..
-        real = mx.multiply(x1, cos_basis) - mx.multiply(x2, sin_basis)
-        imag = mx.multiply(x2, cos_basis) + mx.multiply(x1, sin_basis)
-        if self.traditional:
-            y = mx.stack([real, imag], axis=-1)
-            y = y.reshape(*N, S, H, D)
-        else:
-            y = mx.concat([real, imag], axis=-1)
-            y = y.reshape(*N, S, H, D)
-        return y
 
 
 class Qwen2MLP:
@@ -229,23 +106,6 @@ class Qwen2MLP:
 
     def __call__(self, x: mx.array) -> mx.array:
         return linear(silu(linear(x, self.w_gate)) * linear(x, self.w_up), self.w_down)
-
-
-class RMSNorm:
-    def __init__(self, dim: int, weight: mx.array, eps: float = 1e-5):
-        self.dim = dim
-        self.eps = eps
-        self.weight = weight.astype(mx.float32)
-
-    def __call__(self, x: mx.array) -> mx.array:
-        # TODO: tests to ensure the precision of this function
-        orig_dtype = x.dtype
-        x = x.astype(mx.float32)
-        return (
-            self.weight
-            * x
-            * mx.rsqrt(mx.mean(mx.square(x), axis=-1, keepdims=True) + self.eps)
-        ).astype(orig_dtype)
 
 
 class Qwen2TransformerBlock:
@@ -297,34 +157,13 @@ class Qwen2TransformerBlock:
         self,
         x: mx.array,
         offset: int,
-        mask: mx.array | None = None,
-        cache: KVCache | None = None,
     ) -> mx.array:
-        r = self.self_attn(self.input_layernorm(x), offset, mask, cache)
+        r = self.self_attn(self.input_layernorm(x), offset)
         h = x + r
         r = self.mlp(self.post_attention_layernorm(h))
         out = h + r
         return out
 
-
-def dequantize_linear(mx_layer: Any) -> mx.array:
-    w = mx.dequantize(
-        mx_layer.weight,
-        mx_layer.scales,
-        mx_layer.biases,
-        mx_layer.group_size,
-        mx_layer.bits,
-    )
-    return w
-
-class Embedding:
-    def __init__(self, vocab_size: int, embedding_dim: int, weight: mx.array):
-        self.vocab_size = vocab_size
-        self.embedding_dim = embedding_dim
-        self.weight = weight
-
-    def __call__(self, x: mx.array) -> mx.array:
-        return self.weight[x, :]
 
 class Qwen2Model:
     def __init__(
@@ -343,7 +182,6 @@ class Qwen2Model:
             weight=dequantize_linear(mlx_model.model.embed_tokens).astype(precision),
         )
         self.layers_inner = []
-
 
         for i in range(mlx_model.args.num_hidden_layers):
             wq = dequantize_linear(mlx_model.model.layers[i].self_attn.q_proj)
@@ -392,18 +230,9 @@ class Qwen2Model:
         self,
         inputs: mx.array,
         offset: int,
-        mask: mx.array | None = None,
-        cache: KVCache | None = None,
     ) -> mx.array:
         h = self.embedding(inputs)
         for layer in range(self.num_hidden_layers):
-            h = self.layers_inner[layer](h, offset, None, cache[layer] if cache else None)
+            h = self.layers_inner[layer](h, offset)
         h = self.norm(h)
         return linear(h, self.w_lm_head)
-
-    def sanitize(self, weights: dict):
-        assert False, "not implemented"
-
-    @property
-    def layers(self):
-        return self.layers_inner

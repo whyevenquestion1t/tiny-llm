@@ -1,6 +1,6 @@
-from mlx_lm import load, generate
-from mlx_lm.sample_utils import make_sampler, make_logits_processors
-from tiny_llm.layers import Qwen2Model
+from mlx_lm import load
+from tiny_llm.qwen2 import Qwen2Model
+from tiny_llm.generate import simple_generate
 import mlx.core as mx
 
 with mx.stream(mx.gpu):
@@ -19,23 +19,4 @@ with mx.stream(mx.gpu):
     prompt = tokenizer.apply_chat_template(
         messages, tokenize=False, add_generation_prompt=True
     )
-    def _step(model, y, offset):
-        logits = model(y[None], offset)
-        logits = logits[:, -1, :]
-        logprobs = logits - mx.logsumexp(logits, keepdims=True)
-        sampler = lambda x: mx.argmax(x, axis=-1)
-        y = sampler(logprobs)
-        return y, logprobs.squeeze(0)
-    # prefill with the prompt
-    tokens = mx.array(tokenizer.encode(prompt, add_special_tokens=False))
-    offset = tokens.size
-    detokenizer = tokenizer.detokenizer
-    detokenizer.reset()
-    # generate
-    while True:
-        token, _ = _step(tiny_llm_model, tokens, offset)
-        tokens = mx.concat([tokens, token])
-        if token.item() == tokenizer.eos_token_id:
-            break
-        detokenizer.add_token(token.item())
-        print(detokenizer.last_segment, end="", flush=True)
+    simple_generate(tiny_llm_model, tokenizer, prompt)

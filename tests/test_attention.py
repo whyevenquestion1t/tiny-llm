@@ -1,25 +1,9 @@
 import pytest
 import mlx.core as mx
 import torch
-from tiny_llm.funcs import *
-from tiny_llm.layers import *
+from tiny_llm.attention import *
 import numpy as np
 from .utils import *
-
-
-@pytest.mark.parametrize("stream", AVAILABLE_STREAMS, ids=AVAILABLE_STREAMS_IDS)
-@pytest.mark.parametrize("precision", PRECISIONS, ids=PRECISION_IDS)
-def test_softmax(stream: mx.Stream, precision: np.dtype):
-    with mx.stream(stream):
-        BATCH_SIZE = 10
-        DIM = 10
-        for _ in range(100):
-            x = np.random.rand(BATCH_SIZE, DIM).astype(precision)
-            user_output = softmax(mx.array(x), axis=-1)
-            reference_output = torch.nn.functional.softmax(
-                torch.tensor(x, device=TORCH_DEVICE), dim=-1
-            )
-            assert_allclose(user_output, reference_output, precision=precision)
 
 
 @pytest.mark.parametrize("stream", AVAILABLE_STREAMS, ids=AVAILABLE_STREAMS_IDS)

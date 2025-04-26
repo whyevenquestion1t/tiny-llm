@@ -17,7 +17,7 @@ jobs:
         run: rustup update && rustup toolchain install
       - uses: taiki-e/install-action@mdbook
       - name: patch for gh-pages build
-        run: mv mini-lsm-book/theme/head.hbs._ mini-lsm-book/theme/head.hbs
+        run: mv tiny-llm-book/theme/head.hbs._ tiny-llm-book/theme/head.hbs
       - name: check and build
         run: cargo x ci
       - uses: actions/upload-pages-artifact@v3

@@ -81,22 +81,22 @@ class MultiHeadAttention:
         value: mx.array,
         mask: mx.array | None = None,
     ) -> mx.array:
-        n_batches = query.shape[0]
-        seq_len = query.shape[1]
+        N, L, E = query.shape
+        assert query.shape == key.shape == value.shape
         projection_q = (
             linear(query, self.wq)
-            .reshape(n_batches, self.num_heads, seq_len, self.head_dim)
-            .transpose(1, 0, 2, 3)
+            .reshape(N, L, self.num_heads, self.head_dim)
+            .transpose(0, 2, 1, 3)
         )
         projection_k = (
             linear(key, self.wk)
-            .reshape(n_batches, self.num_heads, seq_len, self.head_dim)
-            .transpose(1, 0, 2, 3)
+            .reshape(N, L, self.num_heads, self.head_dim)
+            .transpose(0, 2, 1, 3)
         )
         projection_v = (
             linear(value, self.wv)
-            .reshape(n_batches, self.num_heads, seq_len, self.head_dim)
-            .transpose(1, 0, 2, 3)
+            .reshape(N, L, self.num_heads, self.head_dim)
+            .transpose(0, 2, 1, 3)
         )
         x = scaled_dot_product_attention(
             projection_q,
@@ -105,5 +105,5 @@ class MultiHeadAttention:
             scale=self.scale,
             mask=mask,
         )
-        x = x.transpose(1, 0, 2).reshape(n_batches, seq_len, self.hidden_size)
+        x = x.transpose(0, 2, 1, 3).reshape(N, L, self.hidden_size)
         return linear(x, self.wo)

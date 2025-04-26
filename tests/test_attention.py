@@ -8,7 +8,7 @@ from .utils import *
 
 @pytest.mark.parametrize("stream", AVAILABLE_STREAMS, ids=AVAILABLE_STREAMS_IDS)
 @pytest.mark.parametrize("precision", PRECISIONS, ids=PRECISION_IDS)
-def test_attention_simple(stream: mx.Stream, precision: np.dtype):
+def test_attention_week_1_day_1_task_1(stream: mx.Stream, precision: np.dtype):
     with mx.stream(stream):
         BATCH_SIZE = 3
         DIM_N = 4
@@ -35,18 +35,18 @@ def test_attention_simple(stream: mx.Stream, precision: np.dtype):
 @pytest.mark.parametrize(
     "qkv_shape", [True, False], ids=["with_seq_len", "without_seq_len"]
 )
-def test_attention_with_mask(stream: mx.Stream, precision: np.dtype, qkv_shape: bool):
+def test_attention_with_mask_week_1_day_1_task_1(stream: mx.Stream, precision: np.dtype, qkv_shape: bool):
     with mx.stream(stream):
         BATCH_SIZE = 3
         SEQ_LEN = 10
-        DIM_N = 4
-        DIM_M = 5
+        H = 4
+        D = 5
         if qkv_shape:
-            qkv_shape = (BATCH_SIZE, SEQ_LEN, DIM_N, DIM_M)
-            mask_shape = (BATCH_SIZE, SEQ_LEN, DIM_N, DIM_N)
+            qkv_shape = (BATCH_SIZE, H, SEQ_LEN, D)
+            mask_shape = (BATCH_SIZE, H, SEQ_LEN, SEQ_LEN)
         else:
-            qkv_shape = (BATCH_SIZE, DIM_N, DIM_M)
-            mask_shape = (BATCH_SIZE, DIM_N, DIM_N)
+            qkv_shape = (BATCH_SIZE, H, SEQ_LEN, D)
+            mask_shape = (BATCH_SIZE, H, SEQ_LEN, SEQ_LEN)
         for _ in range(100):
             query = np.random.rand(*qkv_shape).astype(precision)
             key = np.random.rand(*qkv_shape).astype(precision)
@@ -72,33 +72,31 @@ def test_attention_with_mask(stream: mx.Stream, precision: np.dtype, qkv_shape: 
 
 @pytest.mark.parametrize("stream", AVAILABLE_STREAMS, ids=AVAILABLE_STREAMS_IDS)
 @pytest.mark.parametrize("precision", PRECISIONS, ids=PRECISION_IDS)
-def test_multi_head_attention(stream: mx.Stream, precision: np.dtype):
+def test_multi_head_attention_week_1_day_1_task_2(stream: mx.Stream, precision: np.dtype):
     with mx.stream(stream):
-        BATCH_SIZE = 7
-        DIM_N = 11
-        DIM_M = 9
-        NUM_HEADS = 3
+        SEQ_LEN = 11
+        D = 9
+        H = 3
+        BATCH_SIZE = 10
         for _ in range(100):
-            query = np.random.rand(BATCH_SIZE, DIM_N, DIM_M).astype(precision)
-            key = np.random.rand(BATCH_SIZE, DIM_N, DIM_M).astype(precision)
-            value = np.random.rand(BATCH_SIZE, DIM_N, DIM_M).astype(precision)
-            q_proj_weight = np.random.rand(DIM_M, DIM_M).astype(precision)
-            k_proj_weight = np.random.rand(DIM_M, DIM_M).astype(precision)
-            v_proj_weight = np.random.rand(DIM_M, DIM_M).astype(precision)
-            out_proj_weight = np.random.rand(DIM_M, DIM_M).astype(precision)
-            mask = np.random.rand(DIM_N * NUM_HEADS, BATCH_SIZE, BATCH_SIZE).astype(
-                precision
-            )
+            query = np.random.rand(BATCH_SIZE, SEQ_LEN, H * D).astype(precision)
+            key = np.random.rand(BATCH_SIZE, SEQ_LEN, H * D).astype(precision)
+            value = np.random.rand(BATCH_SIZE, SEQ_LEN, H * D).astype(precision)
+            q_proj_weight = np.random.rand(H * D, H * D).astype(precision)
+            k_proj_weight = np.random.rand(H * D, H * D).astype(precision)
+            v_proj_weight = np.random.rand(H * D, H * D).astype(precision)
+            out_proj_weight = np.random.rand(H * D, H * D).astype(precision)
+            mask = np.random.rand(SEQ_LEN, SEQ_LEN).astype(precision)
             reference_output, _ = torch.nn.functional.multi_head_attention_forward(
-                torch.tensor(query, device=TORCH_DEVICE),
-                torch.tensor(key, device=TORCH_DEVICE),
-                torch.tensor(value, device=TORCH_DEVICE),
-                num_heads=NUM_HEADS,
+                torch.tensor(query, device=TORCH_DEVICE).transpose(0, 1),
+                torch.tensor(key, device=TORCH_DEVICE).transpose(0, 1),
+                torch.tensor(value, device=TORCH_DEVICE).transpose(0, 1),
+                num_heads=H,
                 q_proj_weight=torch.tensor(q_proj_weight, device=TORCH_DEVICE),
                 k_proj_weight=torch.tensor(k_proj_weight, device=TORCH_DEVICE),
                 v_proj_weight=torch.tensor(v_proj_weight, device=TORCH_DEVICE),
                 out_proj_weight=torch.tensor(out_proj_weight, device=TORCH_DEVICE),
-                embed_dim_to_check=DIM_M,
+                embed_dim_to_check=H * D,
                 in_proj_weight=None,
                 in_proj_bias=None,
                 bias_k=None,
@@ -109,9 +107,10 @@ def test_multi_head_attention(stream: mx.Stream, precision: np.dtype):
                 use_separate_proj_weight=True,
                 attn_mask=torch.tensor(mask, device=TORCH_DEVICE),
             )
+            reference_output = reference_output.transpose(0, 1)
             user_output = MultiHeadAttention(
-                DIM_M,
-                NUM_HEADS,
+                H * D,
+                H,
                 mx.array(q_proj_weight),
                 mx.array(k_proj_weight),
                 mx.array(v_proj_weight),

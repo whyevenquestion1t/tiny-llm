@@ -28,4 +28,21 @@ To make the journey as interesting as possible, we will skip a few things for no
 * Loading the model weights -- I don't think it's an interesting thing to learn how to decode those tensor dump files, so
   we will use the `mlx_lm` to load the model and steal the weights from the loaded model into our layer implementations.
 
+## Qwen2 Models
+
+You can try the Qwen2 model with MLX/vLLM. You can read the blog post below to have some idea of what we will build
+within this course. At the end of this week, we will be able to chat with the model -- that is to say, use Qwen2 to
+generate text, as a casual language model.
+
+The reference implementation of the Qwen2 model can be found in huggingface transformers, vLLM, and mlx-lm. You may
+utilize these resources to better understand the internals of the model and what we will implement in this week.
+
+**📚 Readings**
+
+- [Qwen2.5: A Party of Foundation Models!](https://qwenlm.github.io/blog/qwen2.5/)
+- [Key Concepts of the Qwen2 Model](https://qwen.readthedocs.io/en/latest/getting_started/concepts.html)
+- [Huggingface Transformers - Qwen2](https://github.com/huggingface/transformers/tree/main/src/transformers/models/qwen2)
+- [vLLM Qwen2](https://github.com/vllm-project/vllm/blob/main/vllm/model_executor/models/qwen2.py)
+- [mlx-lm Qwen2](https://github.com/ml-explore/mlx-lm/blob/main/mlx_lm/models/qwen2.py)
+
 {{#include copyright.md}}

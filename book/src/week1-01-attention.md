@@ -22,6 +22,13 @@ we will pass a tensor of the shape `N.. x 1024 x 512` to the attention layer.
 
 ## Task 1: Implement `scaled_dot_product_attention`
 
+In this task, we will implement the scaled dot product attention function.
+
+```
+poetry run pytest tests -k week_1_day_1_task_1 -v
+```
+
+
 **📚 Readings**
 
 * [Annotated Transformer](https://nlp.seas.harvard.edu/annotated-transformer/)
@@ -51,6 +58,7 @@ K: 1 x H x L x D
 V: 1 x H x L x D
 Q: 1 x H x L x D
 output: 1 x H x L x D
+mask: 1 x H x L x L
 ```
 
 .. though the attention layer only cares about the last two dimensions. The test case will test any shape of the batching dimension.
@@ -63,6 +71,12 @@ poetry run pytest tests -k test_attention_with_mask
 ```
 
 ## Task 2: Implement `MultiHeadAttention`
+
+In this task, we will implement the multi-head attention layer.
+
+```
+src/tiny_llm/attention.py
+```
 
 **📚 Readings**
 
@@ -100,7 +114,7 @@ W_o: (H x D) x E
 At the end of the day, you should be able to pass the following tests:
 
 ```
-poetry run pytest tests -k test_multi_head_attention
+poetry run pytest tests -k week_1_day_1_task_2 -v
 ```
 
 {{#include copyright.md}}

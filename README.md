@@ -8,8 +8,12 @@ can build the model serving infrastructure from scratch and dig into the optimiz
 
 The goal is to learn the techniques behind efficiently serving an LLM model (i.e., Qwen2 models).
 
+## Book
+
+The tiny-llm book is available at [https://skyzh.github.io/tiny-llm/](https://skyzh.github.io/tiny-llm/). You can follow the guide and start building.
+
 ## Community
 
 You may join skyzh's Discord server and study with the tiny-llm community.
 
-[![Join skyzh's Discord Server](tiny-llm-book/src/discord-badge.svg)](https://skyzh.dev/join/discord)
+[![Join skyzh's Discord Server](book/src/discord-badge.svg)](https://skyzh.dev/join/discord)

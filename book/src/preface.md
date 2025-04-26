@@ -4,7 +4,7 @@ This course is designed for systems engineers who want to understand how LLMs wo
 
 As a system engineer, I always wonder how things work internally and how to optimize them. I had a hard time figuring out
 the LLM stuff. Most of the open source projects that serve LLMs are highly optimized with CUDA kernels and other low-level
-optimizations. It is not easy to understand the whole picture to look at a codebase of 100k lines of code. Therefore, I
+optimizations. It is not easy to understand the whole picture by looking at a codebase of 100k lines of code. Therefore, I
 decided to implement an LLM serving project from scratch -- with only matrix manipulations APIs, so that I can understand
 what it takes to load those LLM model parameters and do the math magic to generate text.
 
@@ -20,7 +20,7 @@ resources are:
 
 ## Environment Setup
 
-This course uses [mlx](https://github.com/ml-explore/mlx), an array/machine learning library for Apple Silicon. Nowaways
+This course uses [MLX](https://github.com/ml-explore/mlx), an array/machine learning library for Apple Silicon. Nowaways
 it's much easier to get an Apple Silicon device than NVIDIA GPUs. In theory you can also do this course with PyTorch or
 numpy, but we just don't have the test infra to support them. We test your implementation against PyTorch's CPU implementation
 and MLX's implementation to ensure correctness.

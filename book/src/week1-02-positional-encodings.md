@@ -78,3 +78,5 @@ poetry run pytest tests -k week_1_day_2_task_2 -v
 **📚 Readings**
 
 - [vLLM implementation of RoPE](https://github.com/vllm-project/vllm/blob/main/vllm/model_executor/layers/rotary_embedding.py)
+
+{{#include copyright.md}}

@@ -37,8 +37,8 @@ You may use `softmax` provided by mlx and implement it later in week 2.
 **📚 Readings**
 
 * [Annotated Transformer](https://nlp.seas.harvard.edu/annotated-transformer/)
-* [PyTorch API](https://pytorch.org/docs/stable/generated/torch.nn.functional.scaled_dot_product_attention.html) (assume `enable_gqa=False`)
-* [MLX API](https://ml-explore.github.io/mlx/build/html/python/_autosummary/mlx.core.fast.scaled_dot_product_attention.html)
+* [PyTorch API](https://pytorch.org/docs/stable/generated/torch.nn.functional.scaled_dot_product_attention.html) (assume `enable_gqa=False`, assume dim_k=dim_v=dim_q and H_k=H_v=H_q)
+* [MLX API](https://ml-explore.github.io/mlx/build/html/python/_autosummary/mlx.core.fast.scaled_dot_product_attention.html) (assume dim_k=dim_v=dim_q and H_k=H_v=H_q)
 * [Attention is All You Need](https://arxiv.org/abs/1706.03762)
 
 ## Task 2: Implement `MultiHeadAttention`
@@ -77,15 +77,15 @@ transpose it to get the right shape.
 **📚 Readings**
 
 * [Annotated Transformer](https://nlp.seas.harvard.edu/annotated-transformer/)
-* [PyTorch API](https://pytorch.org/docs/stable/generated/torch.nn.MultiheadAttention.html)
-* [MLX API](https://ml-explore.github.io/mlx/build/html/python/nn/_autosummary/mlx.nn.MultiHeadAttention.html)
+* [PyTorch API](https://pytorch.org/docs/stable/generated/torch.nn.MultiheadAttention.html) (assume dim_k=dim_v=dim_q and H_k=H_v=H_q)
+* [MLX API](https://ml-explore.github.io/mlx/build/html/python/nn/_autosummary/mlx.nn.MultiHeadAttention.html) (assume dim_k=dim_v=dim_q and H_k=H_v=H_q)
 
 At the end of the day, you should be able to pass the following tests:
 
 ```
 poetry run pytest tests -k test_attention_simple
 poetry run pytest tests -k test_attention_with_mask
-poetry run pytest tests-k test_multi_head_attention
+poetry run pytest tests -k test_multi_head_attention
 ```
 
 {{#include copyright.md}}

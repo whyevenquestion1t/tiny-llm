@@ -8,7 +8,7 @@ from .utils import *
 
 @pytest.mark.parametrize("stream", AVAILABLE_STREAMS, ids=AVAILABLE_STREAMS_IDS)
 @pytest.mark.parametrize("precision", PRECISIONS, ids=PRECISION_IDS)
-def test_attention(stream: mx.Stream, precision: np.dtype):
+def test_attention_simple(stream: mx.Stream, precision: np.dtype):
     with mx.stream(stream):
         BATCH_SIZE = 3
         DIM_N = 4

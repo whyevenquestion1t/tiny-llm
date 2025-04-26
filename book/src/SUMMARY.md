@@ -6,7 +6,7 @@
 ---
 
 - [Week 1: From Matmul to Text](./week1-overview.md)
-    - [Attention and Multi-Head Attention]()
+    - [Attention and Multi-Head Attention](./week1-01-attention.md)
     - [Positional Embeddings and RoPE]()
     - [Grouped/Multi Query Attention]()
     - [Multilayer Perceptron Layer and Transformer]()

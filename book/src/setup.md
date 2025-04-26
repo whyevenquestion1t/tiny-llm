@@ -51,7 +51,7 @@ poetry run pytest tests
 
 ## Download the Model Parameters
 
-We will use the Qwen2-7B-Instruct model for this course. It takes ~20GB of memory in week 2 to load the model parameters.
+We will use the Qwen2-7B-Instruct model for this course. It takes ~20GB of memory in week 1 to load the model parameters.
 If you do not have enough memory, you can consider using the smaller 0.5B model. (We will make the course compatible with
 it in the future; meanwhile, you have to figure out things on your own if you use the 0.5B model. Likely, this only matters
 after week 1 day 6 when you start to load the model parameters.)

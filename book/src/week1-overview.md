@@ -4,6 +4,10 @@ In this week, we will start from the basic matrix operations and see how those t
 Qwen2 model parameters into a model that generates text. We will implement the neural network layers used in the Qwen2
 model using mlx's matrix APIs.
 
+We will use the Qwen2-7B-Instruct model for this week. As we need to dequantize the model parameters, the 4GB model needs
+20GB of memory in week 1. If you do not have enough memory, you can consider using the smaller 0.5B model (we do not have
+infra to test it so you need to figure out things on your own unfortunately).
+
 ## What We will Cover
 
 * Attention, Multi-Head Attention, and Grouped/Multi Query Attention
@@ -13,6 +17,7 @@ model using mlx's matrix APIs.
 * Load the Qwen2 model parameters and generate text
 
 ## What We will Not Cover
+
 To make the journey as interesting as possible, we will skip a few things for now:
 
 * How to quantize/dequantize a model -- that will be part of week 2. The Qwen2 model is quantized so we will need to

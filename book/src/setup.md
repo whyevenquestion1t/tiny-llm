@@ -75,4 +75,6 @@ pdm run python main_ref_impl_week1.py
 
 It should load the model and print some text.
 
+In week 2, we will write some kernels in C++/Metal, and we will need to set up additional tools for that. We will cover it later.
+
 {{#include copyright.md}}

@@ -1,4 +1,4 @@
 #!/bin/bash
 
 cd src/extensions_ref
-python setup.py build_ext --inplace
+pdm run python setup.py build_ext --inplace

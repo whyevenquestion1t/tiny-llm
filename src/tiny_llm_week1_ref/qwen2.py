@@ -66,15 +66,11 @@ class Qwen2MultiHeadAttention:
             .reshape(B, L, self.num_kv_heads, self.head_dim)
             .astype(mx.float32)
         )
-        # offset = cache.offset
         projection_q = self.rope(projection_q, offset=slice(offset, offset + L))
         projection_k = self.rope(projection_k, offset=slice(offset, offset + L))
         projection_q = projection_q.transpose(0, 2, 1, 3)
         projection_k = projection_k.transpose(0, 2, 1, 3)
         projection_v = projection_v.transpose(0, 2, 1, 3)
-        # TODO: it is possible to get a sensible result without using a kv-cache? Otherwise we have to include kv-cache in week 1.
-        # mlx-lm's KvCache seems to do more than just caching, we could extract something out of it.
-        # projection_k, projection_v = cache.update_and_fetch(projection_k, projection_v)
         assert (
             projection_k.dtype == mx.float32
         )  # TODO: can we use float16? also a test framework to ensure all data types are casted correctly.

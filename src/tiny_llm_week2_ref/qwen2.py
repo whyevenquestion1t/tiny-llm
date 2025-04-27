@@ -6,6 +6,7 @@ from .positional_encoding import RoPE
 from typing import Any
 from .embedding import Embedding
 from .quantize import dequantize_linear
+from .kv_cache import TinyKvCache
 
 
 class Qwen2MultiHeadAttention:
@@ -48,6 +49,7 @@ class Qwen2MultiHeadAttention:
         self,
         x: mx.array,
         offset: int,
+        cache: TinyKvCache,
     ) -> mx.array:
         B, L, _ = x.shape
         orig_dtype = x.dtype
@@ -66,19 +68,12 @@ class Qwen2MultiHeadAttention:
             .reshape(B, L, self.num_kv_heads, self.head_dim)
             .astype(mx.float32)
         )
-        # offset = cache.offset
         projection_q = self.rope(projection_q, offset=slice(offset, offset + L))
         projection_k = self.rope(projection_k, offset=slice(offset, offset + L))
         projection_q = projection_q.transpose(0, 2, 1, 3)
         projection_k = projection_k.transpose(0, 2, 1, 3)
         projection_v = projection_v.transpose(0, 2, 1, 3)
-        # TODO: it is possible to get a sensible result without using a kv-cache? Otherwise we have to include kv-cache in week 1.
-        # mlx-lm's KvCache seems to do more than just caching, we could extract something out of it.
-        # projection_k, projection_v = cache.update_and_fetch(projection_k, projection_v)
-        assert (
-            projection_k.dtype == mx.float32
-        )  # TODO: can we use float16? also a test framework to ensure all data types are casted correctly.
-        assert projection_v.dtype == mx.float32
+        projection_k, projection_v = cache.update_and_fetch(projection_k, projection_v)
         x = scaled_dot_product_attention_grouped(
             projection_q,
             projection_k,
@@ -157,8 +152,9 @@ class Qwen2TransformerBlock:
         self,
         x: mx.array,
         offset: int,
+        cache: TinyKvCache,
     ) -> mx.array:
-        r = self.self_attn(self.input_layernorm(x), offset)
+        r = self.self_attn(self.input_layernorm(x), offset, cache)
         h = x + r
         r = self.mlp(self.post_attention_layernorm(h))
         out = h + r
@@ -230,9 +226,10 @@ class Qwen2Model:
         self,
         inputs: mx.array,
         offset: int,
+        cache: list[TinyKvCache],
     ) -> mx.array:
         h = self.embedding(inputs)
         for layer in range(self.num_hidden_layers):
-            h = self.layers_inner[layer](h, offset)
+            h = self.layers_inner[layer](h, offset, cache[layer])
         h = self.norm(h)
         return linear(h, self.w_lm_head)

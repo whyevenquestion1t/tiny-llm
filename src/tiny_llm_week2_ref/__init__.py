@@ -6,3 +6,4 @@ from .positional_encoding import *
 from .quantize import *
 from .qwen2 import *
 from .generate import *
+from .kv_cache import *

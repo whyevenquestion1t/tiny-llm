@@ -23,11 +23,6 @@ def scaled_dot_product_attention_grouped(
     scale: float | None = None,
     mask: mx.array | None = None,
 ) -> mx.array:
-    """
-    Compute scaled dot-product attention.
-
-    query: batch_size x
-    """
     factor = mx.rsqrt(query.shape[-1]) if scale is None else scale
     expected_shape = query.shape
     query = query.reshape(-1, query.shape[-3], query.shape[-2], query.shape[-1])
@@ -44,9 +39,7 @@ def scaled_dot_product_attention_grouped(
     if mask is not None:
         mask = mask.reshape(-1, H, n_repeats, mask.shape[-2], mask.shape[-1])
         scores = scores + mask
-    result = mx.matmul(
-        softmax(scores.astype(mx.float32), axis=-1).astype(scores.dtype), value
-    )
+    result = mx.matmul(softmax(scores, axis=-1), value)
     return result.reshape(expected_shape)
 
 

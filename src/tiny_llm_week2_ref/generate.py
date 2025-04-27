@@ -1,11 +1,14 @@
 import mlx.core as mx
 from .qwen2 import Qwen2Model
 from mlx_lm.tokenizer_utils import TokenizerWrapper
+from .kv_cache import TinyKvCache
 
 
 def simple_generate(model: Qwen2Model, tokenizer: TokenizerWrapper, prompt: str) -> str:
+    kv_cache = [TinyKvCache() for _ in range(model.num_hidden_layers)]
+
     def _step(model, y, offset):
-        logits = model(y[None], offset)
+        logits = model(y[None], offset, kv_cache)
         logits = logits[:, -1, :]
         logprobs = logits - mx.logsumexp(logits, keepdims=True)
         sampler = lambda x: mx.argmax(x, axis=-1)

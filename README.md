@@ -28,17 +28,19 @@ You may join skyzh's Discord server and study with the tiny-llm community.
 | 1.4            | RMSNorm and MLP                                             | ✅    | 🚧   | 🚧  |
 | 1.5            | Transformer Block                                           | ✅    | 🚧   | 🚧  |
 | 1.6            | Load the Model                                              | ✅    | 🚧   | 🚧  |
-| 1.7            | Generate Responses                                          | ✅    | ✅   | 🚧  |
+| 1.7            | Generate Responses (aka Decoding)                           | ✅    | ✅   | 🚧  |
 | 2.1            | KV Cache                                                    | ✅    | 🚧   | 🚧  |
 | 2.2            | Quantized Matmul and Linear (CPU)                           | 🚧    | 🚧   | 🚧  |
 | 2.3            | Quantized Matmul and Linear (Metal)                         | 🚧    | 🚧   | 🚧  |
-| 2.4            | Attention Kernel                                            | 🚧    | 🚧   | 🚧  |
-| 2.5            | Softmax Kernel                                              | 🚧    | 🚧   | 🚧  |
-| 2.6            | Prompt Cache / Multiple Requests                            | 🚧    | 🚧   | 🚧  |
-| 2.7            | Benchmarking                                                | 🚧    | 🚧   | 🚧  |
-| 3.1            | API Server                                                  | 🚧    | 🚧   | 🚧  |
+| 2.4            | Attention and Softmax Kernels                               | 🚧    | 🚧   | 🚧  |
+| 2.5            | Flash Attention                                             | 🚧    | 🚧   | 🚧  |
+| 2.6            | Paged Attention - Part 1                                    | 🚧    | 🚧   | 🚧  |
+| 2.7            | Paged Attention - Part 2                                    | 🚧    | 🚧   | 🚧  |
+| 3.1            | Streaming API Server                                        | 🚧    | 🚧   | 🚧  |
 | 3.2            | Continuous Batching                                         | 🚧    | 🚧   | 🚧  |
-
+| 3.3            | Speculative Decoding                                        | 🚧    | 🚧   | 🚧  |
+| 3.4            | Prefill-Decode Separation                                   | 🚧    | 🚧   | 🚧  |
+| 3.5            | AI Agent                                                    | 🚧    | 🚧   | 🚧  |
 
 <!--
 

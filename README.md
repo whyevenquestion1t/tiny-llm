@@ -18,6 +18,28 @@ You may join skyzh's Discord server and study with the tiny-llm community.
 
 [![Join skyzh's Discord Server](book/src/discord-badge.svg)](https://skyzh.dev/join/discord)
 
+## Roadmap
+
+| Week + Chapter | Topic                                                       | Code | Test | Doc |
+| -------------- | ----------------------------------------------------------- | ---- | ---- | --- |
+| 1.1            | Attention                                                   | ✅    | ✅   | ✅  |
+| 1.2            | RoPE                                                        | ✅    | ✅   | ✅  |
+| 1.3            | Grouped Query Attention                                     | ✅    | 🚧   | 🚧  |
+| 1.4            | RMSNorm and MLP                                             | ✅    | 🚧   | 🚧  |
+| 1.5            | Transformer Block                                           | ✅    | 🚧   | 🚧  |
+| 1.6            | Load the Model                                              | ✅    | 🚧   | 🚧  |
+| 1.7            | Generate Responses                                          | ✅    | ✅   | 🚧  |
+| 2.1            | KV Cache                                                    | 🚧    | 🚧   | 🚧  |
+| 2.2            | Quantized Matmul and Linear (CPU)                           | 🚧    | 🚧   | 🚧  |
+| 2.3            | Quantized Matmul and Linear (Metal)                         | 🚧    | 🚧   | 🚧  |
+| 2.4            | Attention Kernel                                            | 🚧    | 🚧   | 🚧  |
+| 2.5            | Softmax Kernel                                              | 🚧    | 🚧   | 🚧  |
+| 2.6            | Prompt Cache / Multiple Requests                            | 🚧    | 🚧   | 🚧  |
+| 2.7            | Benchmarking                                                | 🚧    | 🚧   | 🚧  |
+| 3.1            | API Server                                                  | 🚧    | 🚧   | 🚧  |
+| 3.2            | Continuous Batching                                         | 🚧    | 🚧   | 🚧  |
+
+
 <!--
 
 ### Day 2: RoPE Embedding

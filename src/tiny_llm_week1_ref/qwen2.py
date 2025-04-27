@@ -50,37 +50,26 @@ class Qwen2MultiHeadAttention:
         offset: int,
     ) -> mx.array:
         B, L, _ = x.shape
-        orig_dtype = x.dtype
-        projection_q = (
-            linear(x, self.wq, bias=self.bq)
-            .reshape(B, L, self.num_heads, self.head_dim)
-            .astype(mx.float32)
+        projection_q = linear(x, self.wq, bias=self.bq).reshape(
+            B, L, self.num_heads, self.head_dim
         )
-        projection_k = (
-            linear(x, self.wk, bias=self.bk)
-            .reshape(B, L, self.num_kv_heads, self.head_dim)
-            .astype(mx.float32)
+        projection_k = linear(x, self.wk, bias=self.bk).reshape(
+            B, L, self.num_kv_heads, self.head_dim
         )
-        projection_v = (
-            linear(x, self.wv, bias=self.bv)
-            .reshape(B, L, self.num_kv_heads, self.head_dim)
-            .astype(mx.float32)
+        projection_v = linear(x, self.wv, bias=self.bv).reshape(
+            B, L, self.num_kv_heads, self.head_dim
         )
         projection_q = self.rope(projection_q, offset=slice(offset, offset + L))
         projection_k = self.rope(projection_k, offset=slice(offset, offset + L))
         projection_q = projection_q.transpose(0, 2, 1, 3)
         projection_k = projection_k.transpose(0, 2, 1, 3)
         projection_v = projection_v.transpose(0, 2, 1, 3)
-        assert (
-            projection_k.dtype == mx.float32
-        )  # TODO: can we use float16? also a test framework to ensure all data types are casted correctly.
-        assert projection_v.dtype == mx.float32
         x = scaled_dot_product_attention_grouped(
-            projection_q,
-            projection_k,
-            projection_v,
+            projection_q.astype(mx.float32),
+            projection_k.astype(mx.float32),
+            projection_v.astype(mx.float32),
             scale=self.scale,
-        ).astype(orig_dtype)
+        ).astype(x.dtype)
         x = x.transpose(0, 2, 1, 3).reshape(B, L, self.hidden_size)
         return linear(x, self.wo)
 

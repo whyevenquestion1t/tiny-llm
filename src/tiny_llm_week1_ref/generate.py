@@ -14,12 +14,11 @@ def simple_generate(model: Qwen2Model, tokenizer: TokenizerWrapper, prompt: str)
 
     # prefill with the prompt
     tokens = mx.array(tokenizer.encode(prompt, add_special_tokens=False))
-    offset = tokens.size
     detokenizer = tokenizer.detokenizer
     detokenizer.reset()
     # generate/decode
     while True:
-        token, _ = _step(model, tokens, offset)
+        token, _ = _step(model, tokens, tokens.size)
         tokens = mx.concat([tokens, token])
         if token.item() == tokenizer.eos_token_id:
             break

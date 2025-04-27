@@ -54,4 +54,4 @@ class RoPE:
         else:
             y = mx.concat([real, imag], axis=-1)
             y = y.reshape(N, S, H, D)
-        return y
+        return y.astype(x.dtype)

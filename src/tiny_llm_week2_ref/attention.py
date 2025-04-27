@@ -23,7 +23,8 @@ def scaled_dot_product_attention_grouped(
     scale: float | None = None,
     mask: mx.array | None = None,
 ) -> mx.array:
-    factor = mx.rsqrt(query.shape[-1]) if scale is None else scale
+    factor = mx.rsqrt(query.shape[-1]) if scale is None else mx.array(scale)
+    factor = factor.astype(query.dtype)
     expected_shape = query.shape
     query = query.reshape(-1, query.shape[-3], query.shape[-2], query.shape[-1])
     key = key.reshape(-1, key.shape[-3], key.shape[-2], key.shape[-1])

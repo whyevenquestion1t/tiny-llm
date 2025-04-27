@@ -29,7 +29,7 @@ You may join skyzh's Discord server and study with the tiny-llm community.
 | 1.5            | Transformer Block                                           | ✅    | 🚧   | 🚧  |
 | 1.6            | Load the Model                                              | ✅    | 🚧   | 🚧  |
 | 1.7            | Generate Responses                                          | ✅    | ✅   | 🚧  |
-| 2.1            | KV Cache                                                    | 🚧    | 🚧   | 🚧  |
+| 2.1            | KV Cache                                                    | ✅    | 🚧   | 🚧  |
 | 2.2            | Quantized Matmul and Linear (CPU)                           | 🚧    | 🚧   | 🚧  |
 | 2.3            | Quantized Matmul and Linear (Metal)                         | 🚧    | 🚧   | 🚧  |
 | 2.4            | Attention Kernel                                            | 🚧    | 🚧   | 🚧  |

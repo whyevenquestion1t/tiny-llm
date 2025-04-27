@@ -4,3 +4,8 @@ MLX uses INT4 W4A16
 https://ml-explore.github.io/mlx/build/html/dev/extensions.html
 
 pdm run ./build_ext.sh
+
+speculative decoding
+prefill and decode separation
+quantized kv cache
+Assert return data type

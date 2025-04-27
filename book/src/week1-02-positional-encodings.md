@@ -52,7 +52,7 @@ You can do this by reshaping `x` to (N, L, H, D // 2, 2) and then applying the a
 You can test your implementation by running the following command:
 
 ```
-pdm run pytest tests -k week_1_day_2_task_1 -v
+pdm run test -k week_1_day_2_task_1 -v
 ```
 
 ## Task 2: Implement `RoPE` in the non-traditional form
@@ -74,7 +74,7 @@ frequencies to each half separately.
 You can test your implementation by running the following command:
 
 ```
-pdm run pytest tests -k week_1_day_2_task_2 -v
+pdm run test -k week_1_day_2_task_2 -v
 ```
 
 **📚 Readings**

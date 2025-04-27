@@ -30,24 +30,22 @@ NB_MODULE(_ext, m) {
             array: ``alpha * x + beta * y``
       )");
 
-    // m.def("quantized_linear", &tiny_llm_ext_ref::quantized_linear, "scales"_a, "biases"_a, "group_size"_a, "bits"_a,
-    //       "x"_a, "w"_a, "bias"_a = nb::none(), nb::kw_only(), "stream"_a = nb::none(),
-    //       R"(
-    //     Quantized linear layer
+    m.def("quantized_matmul", &tiny_llm_ext_ref::quantized_matmul,
+          "scales"_a, "biases"_a, "group_size"_a, "bits"_a,
+          "a"_a, "b"_a, "transpose_b"_a = false, "stream"_a = nb::none(),
+          R"(
+        Quantized matmul layer
 
-    //     Follows numpy style broadcasting between ``x`` and ``w``
-    //     Inputs are upcasted to floats if needed
+        Args:
+            scales (array): Scaling factors for ``a``.
+            biases (array): Biases for ``a``.
+            group_size (int): Group size for ``a``.
+            bits (int): Number of bits for ``a``.
+            a (array): Input array.
+            b (array): Input array.
+            transpose_b (bool): Whether to transpose ``b`` before multiplication.
 
-    //     Args:
-    //         scales (array): Scaling factors for ``x``.
-    //         biases (array): Biases for ``x``.
-    //         group_size (int): Group size for ``x``.
-    //         bits (int): Number of bits for ``x``.
-    //         x (array): Input array.
-    //         w (array): Input array.
-    //         bias (array): Input array.
-
-    //     Returns:
-    //         array: ``x * w + bias``
-    //   )");
+        Returns:
+            array: ``a * b``
+      )");
 }

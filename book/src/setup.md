@@ -36,7 +36,7 @@ pdm install -v # this will automatically create a virtual environment and instal
 ```bash
 pdm run python check.py
 # The reference solution should pass all the tests
-pdm run pytest tests_ref_impl_week1
+pdm run test_ref_impl_week1
 ```
 
 ## Run Unit Tests
@@ -44,7 +44,7 @@ pdm run pytest tests_ref_impl_week1
 Your code is in `src/tiny_llm`. You can run the unit tests with:
 
 ```bash
-pdm run pytest tests
+pdm run test
 ```
 
 ## Download the Model Parameters
@@ -70,7 +70,7 @@ huggingface-cli download Qwen/Qwen2-7B-Instruct-MLX
 Then, you can run:
 
 ```bash
-pdm run python main_ref_impl_week1.py
+pdm run main --solution week1_ref
 ```
 
 It should load the model and print some text.

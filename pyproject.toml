@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=62", "cmake>=3.25", "mlx>=0.25.0", "nanobind==2.4.0"]
-build-backend = "setuptools.build_meta"
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
 
 [project]
 name = "tiny-llm"
@@ -20,6 +20,14 @@ dependencies = [
     "setuptools>=62",
     "nanobind==2.4.0"
 ]
+
+[tool.pdm.scripts]
+build-ext-ref.cmd = "python build.py"
+build-ext-ref.working_dir = "src/extensions_ref"
+main.cmd = "python main.py"
+test.cmd = "pytest tests"
+test-week1-ref.cmd = "pytest tests_ref_impl_week1"
+test-week2-ref.cmd = "pytest tests_ref_impl_week2"
 
 [tool.pytest.ini_options]
 addopts = [

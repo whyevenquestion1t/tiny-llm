@@ -32,14 +32,20 @@ find_package(MLX CONFIG REQUIRED)
 add_library(tiny_llm_ext_ref)
 
 # Add sources
-target_sources(tiny_llm_ext_ref PUBLIC ${CMAKE_CURRENT_LIST_DIR}/axpby/axpby.cpp)
+target_sources(
+  tiny_llm_ext_ref
+  PUBLIC
+  ${CMAKE_CURRENT_LIST_DIR}/axpby/axpby.cpp
+  # ${CMAKE_CURRENT_LIST_DIR}/src/quantized_matmul.cpp
+)
 
 # Add include headers
-target_include_directories(tiny_llm_ext_ref PUBLIC ${CMAKE_CURRENT_LIST_DIR})
+target_include_directories(tiny_llm_ext_ref PUBLIC ${CMAKE_CURRENT_LIST_DIR} ${CMAKE_CURRENT_LIST_DIR}/src)
 
 # Link to mlx
 target_link_libraries(tiny_llm_ext_ref PUBLIC mlx)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # so that clangd can pick this up
 
 # ----------------------------- Metal -----------------------------
 

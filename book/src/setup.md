@@ -1,12 +1,10 @@
 # Setting Up the Environment
 
-To follow along this course, you will need a mactonish device with Apple Silicon. We manage the codebase with the poetry
-dependency manager.
+To follow along this course, you will need a mactonish device with Apple Silicon. We manage the codebase with pdm.
 
-## Install Poetry
+## Install pdm
 
-Please follow the [offcial guide](https://python-poetry.org/docs/#installing-with-the-official-installer) to install
-poetry.
+Please follow the [offcial guide](https://pdm-project.org/en/latest/) to install pdm.
 
 ## Clone the Repository
 
@@ -30,15 +28,15 @@ We provide all reference implementations and you can refer to them if you get st
 
 ```bash
 cd tiny-llm
-poetry install
+pdm install -v # this will automatically create a virtual environment and install all dependencies
 ```
 
 ## Check the Installation
 
 ```bash
-poetry run python check.py
+pdm run python check.py
 # The reference solution should pass all the tests
-poetry run pytest tests_ref_impl_week1
+pdm run pytest tests_ref_impl_week1
 ```
 
 ## Run Unit Tests
@@ -46,7 +44,7 @@ poetry run pytest tests_ref_impl_week1
 Your code is in `src/tiny_llm`. You can run the unit tests with:
 
 ```bash
-poetry run pytest tests
+pdm run pytest tests
 ```
 
 ## Download the Model Parameters
@@ -58,13 +56,13 @@ after week 1 day 6 when you start to load the model parameters.)
 
 Follow the guide of [this page](https://huggingface.co/docs/huggingface_hub/main/en/guides/cli) to install the huggingface
 cli. You should install it in your user directory/globally instead of in the tiny-llm virtual environment created by
-poetry.
+pdm.
 
 The model parameters are hosted on Hugging Face. Once you authenticated your cli with the credentials, you can download
 them with:
 
 ```bash
-# do not do this in the virtual environment created by poetry; do `deactivate` first if you did `poetry shell`
+# do not do this in the virtual environment created by pdm
 huggingface-cli login
 huggingface-cli download Qwen/Qwen2-7B-Instruct-MLX
 ```
@@ -72,7 +70,7 @@ huggingface-cli download Qwen/Qwen2-7B-Instruct-MLX
 Then, you can run:
 
 ```bash
-poetry run python main_ref_impl_week1.py
+pdm run python main_ref_impl_week1.py
 ```
 
 It should load the model and print some text.

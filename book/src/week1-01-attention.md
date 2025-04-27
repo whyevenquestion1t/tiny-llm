@@ -25,7 +25,7 @@ we will pass a tensor of the shape `N.. x 1024 x 512` to the attention layer.
 In this task, we will implement the scaled dot product attention function.
 
 ```
-poetry run pytest tests -k week_1_day_1_task_1 -v
+pdm run pytest tests -k week_1_day_1_task_1 -v
 ```
 
 
@@ -66,8 +66,8 @@ mask: 1 x H x L x L
 At the end of this task, you should be able to pass the following tests:
 
 ```
-poetry run pytest tests -k test_attention_simple
-poetry run pytest tests -k test_attention_with_mask
+pdm run pytest tests -k test_attention_simple
+pdm run pytest tests -k test_attention_with_mask
 ```
 
 ## Task 2: Implement `MultiHeadAttention`
@@ -115,7 +115,7 @@ W_o: (H x D) x E
 At the end of the day, you should be able to pass the following tests:
 
 ```
-poetry run pytest tests -k week_1_day_1_task_2 -v
+pdm run pytest tests -k week_1_day_1_task_2 -v
 ```
 
 {{#include copyright.md}}

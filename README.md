@@ -30,8 +30,8 @@ You may join skyzh's Discord server and study with the tiny-llm community.
 | 1.6            | Load the Model                                              | ✅    | 🚧   | 🚧  |
 | 1.7            | Generate Responses (aka Decoding)                           | ✅    | ✅   | 🚧  |
 | 2.1            | KV Cache                                                    | ✅    | 🚧   | 🚧  |
-| 2.2            | Quantized Matmul and Linear - Part 1                        | ✅    | 🚧   | 🚧  |
-| 2.3            | Quantized Matmul and Linear - Part 2                        | 🚧    | 🚧   | 🚧  |
+| 2.2            | Quantized Matmul and Linear - CPU                           | ✅    | 🚧   | 🚧  |
+| 2.3            | Quantized Matmul and Linear - GPU                           | ✅    | 🚧   | 🚧  |
 | 2.4            | Flash Attention and Other Kernels                           | 🚧    | 🚧   | 🚧  |
 | 2.5            | Continuous Batching                                         | 🚧    | 🚧   | 🚧  |
 | 2.6            | Speculative Decoding                                        | 🚧    | 🚧   | 🚧  |

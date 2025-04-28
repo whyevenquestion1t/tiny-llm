@@ -26,6 +26,8 @@ def quantized_matmul(
 ) -> mx.array:
     *N, D = a.shape
     a = a.reshape(-1, D)
+    a = mx.contiguous(a)
+    b = mx.contiguous(b)
     return tiny_llm_ext_ref.quantized_matmul(
         scales, biases, group_size, bits, a, b, transpose_b
     ).reshape(*N, -1)

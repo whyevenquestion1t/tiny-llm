@@ -7,6 +7,8 @@ namespace mx = mlx::core;
 
 namespace tiny_llm_ext_ref {
 
+void load_library(mx::Device d, const char* path);
+
 mx::array quantized_matmul(const mx::array &scales,   // Input array scales
                            const mx::array &biases,   // Input array biases
                            const int group_size,      // Group size

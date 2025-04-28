@@ -42,3 +42,11 @@ def test_task_1_quantized_matmul_simple_f16_cpu():
 
 def test_task_1_quantized_matmul_complex_f16_cpu():
     quantized_matmul_helper(mx.cpu, False, np.float16)
+
+
+def test_task_2_quantized_matmul_simple_f16_gpu():
+    quantized_matmul_helper(mx.gpu, True, np.float16)
+
+
+def test_task_2_quantized_matmul_complex_f16_gpu():
+    quantized_matmul_helper(mx.gpu, False, np.float16)

@@ -12,6 +12,8 @@ using namespace nb::literals;
 NB_MODULE(_ext, m) {
     m.doc() = "tiny-llm extensions for MLX";
 
+    m.def("load_library", &tiny_llm_ext_ref::load_library, "device"_a, "path"_a);
+
     m.def("axpby", &tiny_llm_ext_ref::axpby, "x"_a, "y"_a, "alpha"_a, "beta"_a, nb::kw_only(), "stream"_a = nb::none(),
           R"(
         Scale and sum two vectors element-wise

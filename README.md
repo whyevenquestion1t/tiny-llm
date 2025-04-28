@@ -6,7 +6,11 @@ Still WIP and in very early stage. A tutorial on LLM serving using MLX for syste
 is solely (almost!) based on MLX array/matrix APIs without any high-level neural network APIs, so that we
 can build the model serving infrastructure from scratch and dig into the optimizations.
 
-The goal is to learn the techniques behind efficiently serving an LLM model (i.e., Qwen2 models).
+The goal is to learn the techniques behind efficiently serving a large language model (i.e., Qwen2 models).
+
+Why MLX: nowadays it's easier to get a macOS-based local development environment than setting up an NVIDIA GPU.
+
+Why Qwen2: this was the first LLM I've interacted with -- it's the go-to example in the vllm documentation. I spent some time looking at the vllm source code and built some knowledge around it.
 
 ## Book
 

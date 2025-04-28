@@ -23,9 +23,10 @@ def simple_generate(model: Qwen2Model, tokenizer: TokenizerWrapper, prompt: str)
     # generate/decode
     while True:
         token, _ = _step(model, tokens, offset)
-        offset += tokens.size
-        tokens = token
+        if offset != 0:
+            detokenizer.add_token(token.item())
+            print(detokenizer.last_segment, end="", flush=True)
         if token.item() == tokenizer.eos_token_id:
             break
-        detokenizer.add_token(token.item())
-        print(detokenizer.last_segment, end="", flush=True)
+        offset += tokens.size
+        tokens = token

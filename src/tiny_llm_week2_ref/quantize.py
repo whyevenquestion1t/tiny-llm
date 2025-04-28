@@ -14,6 +14,7 @@ def dequantize_linear(mx_layer: Any) -> mx.array:
     )
     return w
 
+
 def quantized_matmul(
     scales: mx.array,
     biases: mx.array,
@@ -23,4 +24,8 @@ def quantized_matmul(
     b: mx.array,
     transpose_b: bool = False,
 ) -> mx.array:
-    return tiny_llm_ext_ref.quantized_matmul(scales, biases, group_size, bits, a, b, transpose_b)
+    *N, D = a.shape
+    a = a.reshape(-1, D)
+    return tiny_llm_ext_ref.quantized_matmul(
+        scales, biases, group_size, bits, a, b, transpose_b
+    ).reshape(*N, -1)

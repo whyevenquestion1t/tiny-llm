@@ -15,7 +15,7 @@ if __name__ == "__main__":
     cmd.initialize_options()
     cmd.build_temp = Path("build")
     cmd.build_lib = Path("build") / "lib"
-    cmd.inplace = False # we do the copy by ourselves
+    cmd.inplace = False  # we do the copy by ourselves
     cmd.ensure_finalized()
     cmd.run()
     for output in cmd.get_outputs():

@@ -1,5 +1,5 @@
 import mlx.core as mx
-from .basics import linear, silu
+from .basics import linear, silu, QuantizedWeights, quantized_linear
 from .attention import scaled_dot_product_attention_grouped
 from .layer_norm import RMSNorm
 from .positional_encoding import RoPE
@@ -15,10 +15,10 @@ class Qwen2MultiHeadAttention:
         hidden_size: int,
         num_heads: int,
         num_kv_heads: int,
-        wq: mx.array,
-        wk: mx.array,
-        wv: mx.array,
-        wo: mx.array,
+        wq: QuantizedWeights,
+        wk: QuantizedWeights,
+        wv: QuantizedWeights,
+        wo: QuantizedWeights,
         bq: mx.array,
         bk: mx.array,
         bv: mx.array,
@@ -52,13 +52,13 @@ class Qwen2MultiHeadAttention:
         cache: TinyKvCache,
     ) -> mx.array:
         B, L, _ = x.shape
-        projection_q = linear(x, self.wq, bias=self.bq).reshape(
+        projection_q = quantized_linear(x, self.wq, bias=self.bq).reshape(
             B, L, self.num_heads, self.head_dim
         )
-        projection_k = linear(x, self.wk, bias=self.bk).reshape(
+        projection_k = quantized_linear(x, self.wk, bias=self.bk).reshape(
             B, L, self.num_kv_heads, self.head_dim
         )
-        projection_v = linear(x, self.wv, bias=self.bv).reshape(
+        projection_v = quantized_linear(x, self.wv, bias=self.bv).reshape(
             B, L, self.num_kv_heads, self.head_dim
         )
         projection_q = self.rope(projection_q, offset=slice(offset, offset + L))
@@ -76,7 +76,7 @@ class Qwen2MultiHeadAttention:
             scale=self.scale,
         ).astype(x.dtype)
         x = x.transpose(0, 2, 1, 3).reshape(B, L, self.hidden_size)
-        return linear(x, self.wo)
+        return quantized_linear(x, self.wo)
 
 
 class Qwen2MLP:
@@ -84,9 +84,9 @@ class Qwen2MLP:
         self,
         dim: int,
         hidden_dim: int,
-        w_gate: mx.array,
-        w_up: mx.array,
-        w_down: mx.array,
+        w_gate: QuantizedWeights,
+        w_up: QuantizedWeights,
+        w_down: QuantizedWeights,
     ):
         self.dim = dim
         self.hidden_dim = hidden_dim
@@ -95,7 +95,10 @@ class Qwen2MLP:
         self.w_down = w_down
 
     def __call__(self, x: mx.array) -> mx.array:
-        return linear(silu(linear(x, self.w_gate)) * linear(x, self.w_up), self.w_down)
+        return quantized_linear(
+            silu(quantized_linear(x, self.w_gate)) * quantized_linear(x, self.w_up),
+            self.w_down,
+        )
 
 
 class Qwen2TransformerBlock:
@@ -106,16 +109,16 @@ class Qwen2TransformerBlock:
         hidden_size: int,
         intermediate_size: int,
         rms_norm_eps: float,
-        wq: mx.array,
-        wk: mx.array,
-        wv: mx.array,
-        wo: mx.array,
+        wq: QuantizedWeights,
+        wk: QuantizedWeights,
+        wv: QuantizedWeights,
+        wo: QuantizedWeights,
         bq: mx.array,
         bk: mx.array,
         bv: mx.array,
-        w_gate: mx.array,
-        w_up: mx.array,
-        w_down: mx.array,
+        w_gate: QuantizedWeights,
+        w_up: QuantizedWeights,
+        w_down: QuantizedWeights,
         w_input_layernorm: mx.array,
         w_post_attention_layernorm: mx.array,
         max_seq_len: int = 32768,
@@ -175,13 +178,27 @@ class Qwen2Model:
         self.layers_inner = []
 
         for i in range(mlx_model.args.num_hidden_layers):
-            wq = dequantize_linear(mlx_model.model.layers[i].self_attn.q_proj)
-            wk = dequantize_linear(mlx_model.model.layers[i].self_attn.k_proj)
-            wv = dequantize_linear(mlx_model.model.layers[i].self_attn.v_proj)
-            wo = dequantize_linear(mlx_model.model.layers[i].self_attn.o_proj)
-            w_gate = dequantize_linear(mlx_model.model.layers[i].mlp.gate_proj)
-            w_up = dequantize_linear(mlx_model.model.layers[i].mlp.up_proj)
-            w_down = dequantize_linear(mlx_model.model.layers[i].mlp.down_proj)
+            wq = QuantizedWeights.from_mlx_layer(
+                mlx_model.model.layers[i].self_attn.q_proj
+            )
+            wk = QuantizedWeights.from_mlx_layer(
+                mlx_model.model.layers[i].self_attn.k_proj
+            )
+            wv = QuantizedWeights.from_mlx_layer(
+                mlx_model.model.layers[i].self_attn.v_proj
+            )
+            wo = QuantizedWeights.from_mlx_layer(
+                mlx_model.model.layers[i].self_attn.o_proj
+            )
+            w_gate = QuantizedWeights.from_mlx_layer(
+                mlx_model.model.layers[i].mlp.gate_proj
+            )
+            w_up = QuantizedWeights.from_mlx_layer(
+                mlx_model.model.layers[i].mlp.up_proj
+            )
+            w_down = QuantizedWeights.from_mlx_layer(
+                mlx_model.model.layers[i].mlp.down_proj
+            )
 
             layer = Qwen2TransformerBlock(
                 num_attention_heads=mlx_model.args.num_attention_heads,
@@ -189,16 +206,16 @@ class Qwen2Model:
                 hidden_size=mlx_model.args.hidden_size,
                 intermediate_size=mlx_model.args.intermediate_size,
                 rms_norm_eps=mlx_model.args.rms_norm_eps,
-                wq=wq.astype(precision),
-                wk=wk.astype(precision),
-                wv=wv.astype(precision),
-                wo=wo.astype(precision),
+                wq=wq,
+                wk=wk,
+                wv=wv,
+                wo=wo,
                 bq=mlx_model.model.layers[i].self_attn.q_proj.bias.astype(precision),
                 bk=mlx_model.model.layers[i].self_attn.k_proj.bias.astype(precision),
                 bv=mlx_model.model.layers[i].self_attn.v_proj.bias.astype(precision),
-                w_gate=w_gate.astype(precision),
-                w_up=w_up.astype(precision),
-                w_down=w_down.astype(precision),
+                w_gate=w_gate,
+                w_up=w_up,
+                w_down=w_down,
                 w_input_layernorm=mlx_model.model.layers[
                     i
                 ].input_layernorm.weight.astype(precision),
@@ -214,7 +231,7 @@ class Qwen2Model:
             weight=mlx_model.model.norm.weight.astype(precision),
             eps=mlx_model.args.rms_norm_eps,
         )
-        self.w_lm_head = dequantize_linear(mlx_model.lm_head)
+        self.w_lm_head = QuantizedWeights.from_mlx_layer(mlx_model.lm_head)
         self.mlx_model = mlx_model
 
     def __call__(
@@ -227,4 +244,4 @@ class Qwen2Model:
         for layer in range(self.num_hidden_layers):
             h = self.layers_inner[layer](h, offset, cache[layer])
         h = self.norm(h)
-        return linear(h, self.w_lm_head)
+        return quantized_linear(h, self.w_lm_head)

@@ -4,7 +4,10 @@ from .tiny_llm_base import *
 import numpy as np
 from .utils import *
 
-def quantized_matmul_helper(stream: mx.Stream, identity_matrix: bool, precision: np.dtype):
+
+def quantized_matmul_helper(
+    stream: mx.Stream, identity_matrix: bool, precision: np.dtype
+):
     with mx.stream(stream):
         if identity_matrix:
             input = mx.array(np.eye(64).astype(precision))
@@ -32,5 +35,10 @@ def quantized_matmul_helper(stream: mx.Stream, identity_matrix: bool, precision:
         )
         assert_allclose(user_out, ref_out, precision)
 
-def test_task_1_quantized_matmul_f16_cpu():
-    quantized_matmul_helper(mx.cpu, True,np.float16)
+
+def test_task_1_quantized_matmul_simple_f16_cpu():
+    quantized_matmul_helper(mx.cpu, True, np.float16)
+
+
+def test_task_1_quantized_matmul_complex_f16_cpu():
+    quantized_matmul_helper(mx.cpu, False, np.float16)

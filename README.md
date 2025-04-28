@@ -39,9 +39,12 @@ You may join skyzh's Discord server and study with the tiny-llm community.
 | 3.1            | Paged Attention - Part 1                                    | 🚧    | 🚧   | 🚧  |
 | 3.2            | Paged Attention - Part 2                                    | 🚧    | 🚧   | 🚧  |
 | 3.3            | Prefill-Decode Separation                                   | 🚧    | 🚧   | 🚧  |
-| 3.4            | Parallelism                                                 | 🚧    | 🚧   | 🚧  |
-| 3.5            | AI Agent                                                    | 🚧    | 🚧   | 🚧  |
-| 3.6            | Streaming API Server                                        | 🚧    | 🚧   | 🚧  |
+| 3.4            | Scheduler                                                   | 🚧    | 🚧   | 🚧  |
+| 3.5            | Parallelism                                                 | 🚧    | 🚧   | 🚧  |
+| 3.6            | AI Agent                                                    | 🚧    | 🚧   | 🚧  |
+| 3.7            | Streaming API Server                                        | 🚧    | 🚧   | 🚧  |
+
+Other topics not covered: quantized/compressed kv cache
 
 <!--
 

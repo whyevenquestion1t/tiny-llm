@@ -3,7 +3,6 @@
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/variant.h>
 
-#include "axpby/axpby.h"
 #include "tiny_llm_ext.h"
 
 namespace nb = nanobind;
@@ -14,26 +13,7 @@ NB_MODULE(_ext, m) {
 
     m.def("load_library", &tiny_llm_ext_ref::load_library, "device"_a, "path"_a);
 
-    m.def("axpby", &tiny_llm_ext_ref::axpby, "x"_a, "y"_a, "alpha"_a, "beta"_a, nb::kw_only(), "stream"_a = nb::none(),
-          R"(
-        Scale and sum two vectors element-wise
-        ``z = alpha * x + beta * y``
-
-        Follows numpy style broadcasting between ``x`` and ``y``
-        Inputs are upcasted to floats if needed
-
-        Args:
-            x (array): Input array.
-            y (array): Input array.
-            alpha (float): Scaling factor for ``x``.
-            beta (float): Scaling factor for ``y``.
-
-        Returns:
-            array: ``alpha * x + beta * y``
-      )");
-
-    m.def("quantized_matmul", &tiny_llm_ext_ref::quantized_matmul,
-          "scales"_a, "biases"_a, "group_size"_a, "bits"_a,
+    m.def("quantized_matmul", &tiny_llm_ext_ref::quantized_matmul, "scales"_a, "biases"_a, "group_size"_a, "bits"_a,
           "a"_a, "b"_a, "transpose_b"_a = false, "stream"_a = nb::none(),
           R"(
         Quantized matmul layer

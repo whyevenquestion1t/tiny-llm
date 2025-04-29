@@ -11,3 +11,7 @@ speculative decoding
 prefill and decode separation
 quantized kv cache
 Assert return data type
+
+https://github.com/ml-explore/mlx/blob/main/mlx/backend/metal/kernels/sdpa_vector.h
+https://github.com/philipturner/metal-flash-attention
+https://github.com/ml-explore/mlx/blob/main/mlx/backend/metal/kernels/steel/attn/kernels/steel_attention.h

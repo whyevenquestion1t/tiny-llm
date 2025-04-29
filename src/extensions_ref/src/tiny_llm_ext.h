@@ -7,7 +7,7 @@ namespace mx = mlx::core;
 
 namespace tiny_llm_ext_ref {
 
-void load_library(mx::Device d, const char* path);
+void load_library(mx::Device d, const char *path);
 
 mx::array quantized_matmul(const mx::array &scales,   // Input array scales
                            const mx::array &biases,   // Input array biases
@@ -39,6 +39,26 @@ public:
 private:
     int group_size_;
     int bits_;
+};
+
+mx::array flash_attention(const mx::array &q, const mx::array &k, const mx::array &v, const mx::array &scale,
+                          mx::StreamOrDevice s = {});
+
+class FlashAttention : public mx::Primitive {
+public:
+    explicit FlashAttention(mx::Stream stream) : mx::Primitive(stream) {};
+
+    void eval_cpu(const std::vector<mx::array> &inputs, std::vector<mx::array> &outputs) override;
+    void eval_gpu(const std::vector<mx::array> &inputs, std::vector<mx::array> &outputs) override;
+
+    std::pair<std::vector<mx::array>, std::vector<int>> vmap(const std::vector<mx::array> &inputs,
+                                                             const std::vector<int> &axes) override {
+        throw std::runtime_error("FlashAttention has no vmap implementation.");
+    }
+
+    void print(std::ostream &os) override { os << "FlashAttention"; }
+
+    bool is_equivalent(const mx::Primitive &other) const override;
 };
 
 }  // namespace tiny_llm_ext_ref

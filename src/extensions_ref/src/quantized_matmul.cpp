@@ -1,5 +1,3 @@
-#include <arm_fp16.h>
-
 #include <cstdint>
 #include <iostream>
 #include <sstream>
@@ -64,7 +62,7 @@ mx::array quantized_matmul(const mx::array &scales,         // Input array scale
     if (b.shape()[1] != scales.shape()[1] * group_size / 8) {
         throw std::runtime_error("quantized_matmul: a must have the same number of columns as scales");
     }
-    
+
     return mx::array(
         /* const mx::Shape& shape = */ out_shape,
         /* mx::Dtype dtype = */ mx::float16,
@@ -150,7 +148,7 @@ void QuantizedMatmul::eval_cpu(const std::vector<mx::array> &inputs, std::vector
     quantized_matmul_impl(scales, biases, a, b, out, group_size_, bits_, stream());
 }
 
-void load_library(mx::Device d, const char* path) {
+void load_library(mx::Device d, const char *path) {
     auto &md = mx::metal::device(d);
     md.register_library("tiny_llm_ext_ref", path);
 }
@@ -184,7 +182,6 @@ void QuantizedMatmul::eval_gpu(const std::vector<mx::array> &inputs, std::vector
     compute_encoder.set_input_array(b, 3);
     // Encode output arrays to kernel
     compute_encoder.set_output_array(out, 4);
-
 
     if (!a.flags().row_contiguous) {
         throw std::runtime_error("quantized_matmul: a must be contiguous");

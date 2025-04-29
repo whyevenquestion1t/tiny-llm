@@ -29,6 +29,7 @@ test.cmd = "pytest tests"
 test-week1-ref.cmd = "pytest tests_ref_impl_week1"
 test-week2-ref.cmd = "pytest tests_ref_impl_week2"
 format = "ruff format"
+format-cpp.shell = "find src/extensions_ref -type file \\( -name '*.h' -or -name '*.cpp' \\) | xargs -n1 clang-format -i"
 
 [tool.pytest.ini_options]
 addopts = [

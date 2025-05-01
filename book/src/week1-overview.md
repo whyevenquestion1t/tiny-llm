@@ -36,6 +36,13 @@ To make the journey as interesting as possible, we will skip a few things for no
 * Loading the model weights -- I don't think it's an interesting thing to learn how to decode those tensor dump files, so
   we will use the `mlx_lm` to load the model and steal the weights from the loaded model into our layer implementations.
 
+## Basic Matrix APIs
+
+Although MLX does not offer an introductory guide for beginners, its Python API is designed to be highly compatible with NumPy. To get started, you can refer to [NumPy: The Absolute Basic for Beginners](https://numpy.org/doc/stable/user/absolute_beginners.html) to learn essential matrix operations.
+
+You can also refer to the [MLX Operations API](https://ml-explore.github.io/mlx/build/html/python/ops.html#operations)
+for more details.
+
 ## Qwen2 Models
 
 You can try the Qwen2 model with MLX/vLLM. You can read the blog post below to have some idea of what we will build

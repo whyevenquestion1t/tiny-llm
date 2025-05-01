@@ -148,11 +148,6 @@ void QuantizedMatmul::eval_cpu(const std::vector<mx::array> &inputs, std::vector
     quantized_matmul_impl(scales, biases, a, b, out, group_size_, bits_, stream());
 }
 
-void load_library(mx::Device d, const char *path) {
-    auto &md = mx::metal::device(d);
-    md.register_library("tiny_llm_ext_ref", path);
-}
-
 void QuantizedMatmul::eval_gpu(const std::vector<mx::array> &inputs, std::vector<mx::array> &outputs) {
     auto &scales = inputs[0];
     auto &biases = inputs[1];

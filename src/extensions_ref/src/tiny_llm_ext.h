@@ -41,12 +41,13 @@ private:
     int bits_;
 };
 
-mx::array flash_attention(const mx::array &q, const mx::array &k, const mx::array &v, const mx::array &scale,
-                          mx::StreamOrDevice s = {});
+mx::array flash_attention(const mx::array &q, const mx::array &k, const mx::array &v, const float scale,
+                          const int num_kv_heads, const int num_heads, mx::StreamOrDevice s = {});
 
 class FlashAttention : public mx::Primitive {
 public:
-    explicit FlashAttention(mx::Stream stream) : mx::Primitive(stream) {};
+    explicit FlashAttention(mx::Stream stream, const float scale, const int num_kv_heads, const int num_heads)
+        : mx::Primitive(stream), scale_(scale), num_kv_heads_(num_kv_heads), num_heads_(num_heads) {};
 
     void eval_cpu(const std::vector<mx::array> &inputs, std::vector<mx::array> &outputs) override;
     void eval_gpu(const std::vector<mx::array> &inputs, std::vector<mx::array> &outputs) override;
@@ -58,7 +59,15 @@ public:
 
     void print(std::ostream &os) override { os << "FlashAttention"; }
 
-    bool is_equivalent(const mx::Primitive &other) const override;
+    bool is_equivalent(const mx::Primitive &other) const override {
+        const FlashAttention &r_other = static_cast<const FlashAttention &>(other);
+        return scale_ == r_other.scale_ && num_kv_heads_ == r_other.num_kv_heads_ && num_heads_ == r_other.num_heads_;
+    }
+
+private:
+    float scale_;
+    int num_kv_heads_;
+    int num_heads_;
 };
 
 }  // namespace tiny_llm_ext_ref

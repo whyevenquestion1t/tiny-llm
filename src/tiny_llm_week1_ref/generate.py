@@ -19,6 +19,7 @@ def simple_generate(model: Qwen2Model, tokenizer: TokenizerWrapper, prompt: str)
     # generate/decode
     while True:
         token, _ = _step(model, tokens, tokens.size)
+        mx.eval(token)
         tokens = mx.concat([tokens, token])
         if token.item() == tokenizer.eos_token_id:
             break

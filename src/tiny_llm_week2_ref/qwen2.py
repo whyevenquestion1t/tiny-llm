@@ -50,6 +50,7 @@ class Qwen2MultiHeadAttention:
         x: mx.array,
         offset: int,
         cache: TinyKvCache,
+        mask: mx.array | str | None = None,
     ) -> mx.array:
         B, L, _ = x.shape
         projection_q = quantized_linear(x, self.wq, bias=self.bq).reshape(
@@ -74,6 +75,7 @@ class Qwen2MultiHeadAttention:
             projection_k.astype(mx.float32),
             projection_v.astype(mx.float32),
             scale=self.scale,
+            mask=mask,
         ).astype(x.dtype)
         x = x.transpose(0, 2, 1, 3).reshape(B, L, self.hidden_size)
         return quantized_linear(x, self.wo)
@@ -151,8 +153,9 @@ class Qwen2TransformerBlock:
         x: mx.array,
         offset: int,
         cache: TinyKvCache,
+        mask: mx.array | str | None = None,
     ) -> mx.array:
-        r = self.self_attn(self.input_layernorm(x), offset, cache)
+        r = self.self_attn(self.input_layernorm(x), offset, cache, mask)
         h = x + r
         r = self.mlp(self.post_attention_layernorm(h))
         out = h + r
@@ -242,6 +245,6 @@ class Qwen2Model:
     ) -> mx.array:
         h = self.embedding(inputs)
         for layer in range(self.num_hidden_layers):
-            h = self.layers_inner[layer](h, offset, cache[layer])
+            h = self.layers_inner[layer](h, offset, cache[layer], mask="causal" if h.shape[1] > 1 else None)
         h = self.norm(h)
         return quantized_linear(h, self.w_lm_head)

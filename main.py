@@ -16,20 +16,16 @@ args = parser.parse_args()
 use_mlx = False
 if args.solution == "tiny_llm":
     from tiny_llm import Qwen2Model, simple_generate
-
     print("Using your tiny_llm solution")
 elif args.solution == "tiny_llm_week1_ref" or args.solution == "week1_ref":
     from tiny_llm_week1_ref import Qwen2Model, simple_generate
-
     print("Using tiny_llm_week1_ref solution")
 elif args.solution == "tiny_llm_week2_ref" or args.solution == "week2_ref":
     from tiny_llm_week2_ref import Qwen2Model, simple_generate
-
     print("Using tiny_llm_week2_ref solution")
 elif args.solution == "mlx":
     use_mlx = True
     from mlx_lm.generate import stream_generate
-
     print("Using the original mlx model")
 else:
     raise ValueError(f"Solution {args.solution} not supported")

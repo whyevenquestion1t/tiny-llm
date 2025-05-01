@@ -17,3 +17,5 @@ https://github.com/philipturner/metal-flash-attention
 https://github.com/ml-explore/mlx/blob/main/mlx/backend/metal/kernels/steel/attn/kernels/steel_attention.h
 https://triton-lang.org/main/getting-started/tutorials/06-fused-attention.html
 https://github.com/ml-explore/mlx/blob/main/mlx/backend/metal/kernels/sdpa_vector.h
+
+attention mask why

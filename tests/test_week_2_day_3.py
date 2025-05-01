@@ -38,3 +38,11 @@ def test_flash_attention_cpu_small():
 
 def test_flash_attention_cpu():
     attention_helper(mx.cpu, 18, 6, 7, 5, 3, 10)
+
+
+def test_flash_attention_gpu_small():
+    attention_helper(mx.gpu, 6, 3, 2, 5, 3, 1)
+
+
+def test_flash_attention_gpu():
+    attention_helper(mx.gpu, 18, 6, 7, 5, 3, 10)

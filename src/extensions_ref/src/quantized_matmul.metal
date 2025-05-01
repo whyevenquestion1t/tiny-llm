@@ -7,16 +7,16 @@
     device const int &M [[buffer(5)]],
     device const int &N [[buffer(6)]],
     device const int &K [[buffer(7)]],
-    uint2 groupId [[threadgroup_position_in_grid]],
-    uint2 threadId [[thread_position_in_threadgroup]],
-    uint2 threads_per_threadgroup [[threads_per_threadgroup]]) {
+    uint group_id [[threadgroup_position_in_grid]],
+    uint thread_id [[thread_position_in_threadgroup]],
+    uint threads_per_threadgroup [[threads_per_threadgroup]]) {
     const int group_size = 64;
     const int bits = 4;
     const int packs_per_item = 32 / bits;
     const int item_mask = (1 << bits) - 1;
     const int groups_per_row = N / group_size;
     // Each threadgroup processes an element in the output matrix
-    const int64_t idx = groupId.x * threads_per_threadgroup.x + threadId.x;
+    const int64_t idx = group_id * threads_per_threadgroup + thread_id;
     const int64_t i = idx / K;
     const int64_t k = idx % K;
     float sum = 0;

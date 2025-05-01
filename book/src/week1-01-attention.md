@@ -28,6 +28,7 @@ In this task, we will implement the scaled dot product attention function.
 pdm run test -k week_1_day_1_task_1 -v
 ```
 
+TODO: fix test case names, do not do same dims in this chapter: instead, introduce S, L, H, D, etc.
 
 **📚 Readings**
 

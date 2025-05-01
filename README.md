@@ -36,10 +36,10 @@ You may join skyzh's Discord server and study with the tiny-llm community.
 | 2.1            | KV Cache                                                    | ✅    | 🚧   | 🚧  |
 | 2.2            | Quantized Matmul and Linear - CPU                           | ✅    | 🚧   | 🚧  |
 | 2.3            | Quantized Matmul and Linear - GPU                           | ✅    | 🚧   | 🚧  |
-| 2.4            | Flash Attention and Other Kernels                           | 🚧    | 🚧   | 🚧  |
-| 2.5            | Continuous Batching                                         | 🚧    | 🚧   | 🚧  |
-| 2.6            | Speculative Decoding                                        | 🚧    | 🚧   | 🚧  |
-| 2.7            | Prompt/Prefix Cache                                         | 🚧    | 🚧   | 🚧  |
+| 2.4            | Flash Attention - CPU                                       | ✅    | 🚧   | 🚧  |
+| 2.5            | Flash Attention - GPU                                       | 🚧    | 🚧   | 🚧  |
+| 2.6            | Continuous Batching                                         | 🚧    | 🚧   | 🚧  |
+| 2.7            | Speculative Decoding                                        | 🚧    | 🚧   | 🚧  |
 | 3.1            | Paged Attention - Part 1                                    | 🚧    | 🚧   | 🚧  |
 | 3.2            | Paged Attention - Part 2                                    | 🚧    | 🚧   | 🚧  |
 | 3.3            | Prefill-Decode Separation                                   | 🚧    | 🚧   | 🚧  |

@@ -245,6 +245,8 @@ class Qwen2Model:
     ) -> mx.array:
         h = self.embedding(inputs)
         for layer in range(self.num_hidden_layers):
-            h = self.layers_inner[layer](h, offset, cache[layer], mask="causal" if h.shape[1] > 1 else None)
+            h = self.layers_inner[layer](
+                h, offset, cache[layer], mask="causal" if h.shape[1] > 1 else None
+            )
         h = self.norm(h)
         return quantized_linear(h, self.w_lm_head)

@@ -37,7 +37,7 @@ You may join skyzh's Discord server and study with the tiny-llm community.
 | 2.2            | Quantized Matmul and Linear - CPU                           | ✅    | 🚧   | 🚧  |
 | 2.3            | Quantized Matmul and Linear - GPU                           | ✅    | 🚧   | 🚧  |
 | 2.4            | Flash Attention - CPU                                       | ✅    | 🚧   | 🚧  |
-| 2.5            | Flash Attention - GPU                                       | 🚧    | 🚧   | 🚧  |
+| 2.5            | Flash Attention - GPU                                       | ✅    | 🚧   | 🚧  |
 | 2.6            | Continuous Batching                                         | 🚧    | 🚧   | 🚧  |
 | 2.7            | Speculative Decoding                                        | 🚧    | 🚧   | 🚧  |
 | 3.1            | Paged Attention - Part 1                                    | 🚧    | 🚧   | 🚧  |

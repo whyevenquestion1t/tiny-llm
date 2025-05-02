@@ -33,17 +33,17 @@ You may join skyzh's Discord server and study with the tiny-llm community.
 | 1.5            | Transformer Block                                           | ✅    | 🚧   | 🚧  |
 | 1.6            | Load the Model                                              | ✅    | 🚧   | 🚧  |
 | 1.7            | Generate Responses (aka Decoding)                           | ✅    | ✅   | 🚧  |
-| 2.1            | KV Cache                                                    | ✅    | 🚧   | 🚧  |
+| 2.1            | Key-Value Cache                                             | ✅    | 🚧   | 🚧  |
 | 2.2            | Quantized Matmul and Linear - CPU                           | ✅    | 🚧   | 🚧  |
 | 2.3            | Quantized Matmul and Linear - GPU                           | ✅    | 🚧   | 🚧  |
-| 2.4            | Flash Attention - CPU                                       | ✅    | 🚧   | 🚧  |
-| 2.5            | Flash Attention - GPU                                       | ✅    | 🚧   | 🚧  |
-| 2.6            | Continuous Batching                                         | 🚧    | 🚧   | 🚧  |
+| 2.4            | Flash Attention 2 - CPU                                     | ✅    | 🚧   | 🚧  |
+| 2.5            | Flash Attention 2 - GPU                                     | ✅    | 🚧   | 🚧  |
+| 2.6            | Continuous Batching + Chunked Prefill                       | 🚧    | 🚧   | 🚧  |
 | 2.7            | Speculative Decoding                                        | 🚧    | 🚧   | 🚧  |
 | 3.1            | Paged Attention - Part 1                                    | 🚧    | 🚧   | 🚧  |
 | 3.2            | Paged Attention - Part 2                                    | 🚧    | 🚧   | 🚧  |
 | 3.3            | MoE (Mixture of Experts)                                    | 🚧    | 🚧   | 🚧  |
-| 3.4            | Prefill-Decode Separation                                   | 🚧    | 🚧   | 🚧  |
+| 3.4            | Prefill-Decode Separation (requires two Macintosh devices)                                  | 🚧    | 🚧   | 🚧  |
 | 3.5            | Scheduler                                                   | 🚧    | 🚧   | 🚧  |
 | 3.6            | AI Agent                                                    | 🚧    | 🚧   | 🚧  |
 | 3.7            | Streaming API Server                                        | 🚧    | 🚧   | 🚧  |

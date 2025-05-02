@@ -1,6 +1,6 @@
 # Setting Up the Environment
 
-To follow along this course, you will need a mactonish device with Apple Silicon. We manage the codebase with pdm.
+To follow along this course, you will need a Macintosh device with Apple Silicon. We manage the codebase with pdm.
 
 ## Install pdm
 

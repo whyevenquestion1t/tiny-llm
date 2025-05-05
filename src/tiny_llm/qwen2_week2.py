@@ -82,7 +82,7 @@ class Qwen2TransformerBlock:
         pass
 
 
-class Qwen2Model:
+class Qwen2ModelWeek2:
     def __init__(self, mlx_model: Any):
         pass
 

@@ -1,5 +1,6 @@
 import mlx.core as mx
 from .basics import softmax, linear
+from extensions_ref import tiny_llm_ext_ref
 
 
 def scaled_dot_product_attention(
@@ -21,7 +22,7 @@ def scaled_dot_product_attention_grouped(
     key: mx.array,
     value: mx.array,
     scale: float | None = None,
-    mask: mx.array | None = None,
+    mask: mx.array | str | None = None,
 ) -> mx.array:
     factor = mx.rsqrt(query.shape[-1]) if scale is None else mx.array(scale)
     factor = factor.astype(query.dtype)
@@ -35,13 +36,39 @@ def scaled_dot_product_attention_grouped(
     query = query.reshape(-1, H, n_repeats, L, D)
     key = key.reshape(-1, H, 1, S, D)
     value = value.reshape(-1, H, 1, S, D)
-    
+
     scores = mx.matmul(query, key.swapaxes(-2, -1)) * factor
     if mask is not None:
-        mask = mask.reshape(-1, H, n_repeats, mask.shape[-2], mask.shape[-1])
-        scores = scores + mask
+        if mask == "causal":
+            mask = 1 - mx.tril(mx.ones((L, S)))
+            mask = mx.where(mask, mx.array(-mx.inf), mx.array(0))
+            scores = scores + mask
+        else:
+            mask = mask.reshape(-1, H, n_repeats, mask.shape[-2], mask.shape[-1])
+            scores = scores + mask
     result = mx.matmul(softmax(scores, axis=-1), value)
     return result.reshape(expected_shape)
+
+
+def flash_attention(
+    query: mx.array,
+    key: mx.array,
+    value: mx.array,
+    scale: float | None = None,
+) -> mx.array:
+    *B, H_q, S, E = query.shape
+    _, H, L, _ = key.shape
+    assert H_q % H == 0
+    query = query.reshape(-1, S, E)
+    key = key.reshape(-1, L, E)
+    value = value.reshape(-1, L, E)
+    query = mx.contiguous(query)
+    key = mx.contiguous(key)
+    value = mx.contiguous(value)
+    result = tiny_llm_ext_ref.flash_attention(
+        query, key, value, scale, num_heads=H_q, num_kv_heads=H
+    )
+    return result.reshape(*B, H_q, S, E)
 
 
 class MultiHeadAttention:

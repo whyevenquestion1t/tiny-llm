@@ -38,15 +38,15 @@ You may join skyzh's Discord server and study with the tiny-llm community.
 | 2.3            | Quantized Matmul and Linear - GPU                           | ✅    | 🚧   | 🚧  |
 | 2.4            | Flash Attention 2 - CPU                                     | ✅    | 🚧   | 🚧  |
 | 2.5            | Flash Attention 2 - GPU                                     | ✅    | 🚧   | 🚧  |
-| 2.6            | Continuous Batching + Chunked Prefill                       | 🚧    | 🚧   | 🚧  |
-| 2.7            | Speculative Decoding                                        | 🚧    | 🚧   | 🚧  |
+| 2.6            | Continuous Batching                                         | 🚧    | 🚧   | 🚧  |
+| 2.7            | Chunked Prefill                                             | 🚧    | 🚧   | 🚧  |
 | 3.1            | Paged Attention - Part 1                                    | 🚧    | 🚧   | 🚧  |
 | 3.2            | Paged Attention - Part 2                                    | 🚧    | 🚧   | 🚧  |
 | 3.3            | MoE (Mixture of Experts)                                    | 🚧    | 🚧   | 🚧  |
-| 3.4            | Prefill-Decode Separation (requires two Macintosh devices)                                  | 🚧    | 🚧   | 🚧  |
-| 3.5            | Scheduler                                                   | 🚧    | 🚧   | 🚧  |
-| 3.6            | AI Agent                                                    | 🚧    | 🚧   | 🚧  |
-| 3.7            | Streaming API Server                                        | 🚧    | 🚧   | 🚧  |
+| 2.4            | Speculative Decoding                                        | 🚧    | 🚧   | 🚧  |
+| 3.5            | Prefill-Decode Separation (requires two Macintosh devices)  | 🚧    | 🚧   | 🚧  |
+| 3.6            | Parallelism                                                 | 🚧    | 🚧   | 🚧  |
+| 3.7            | AI Agent                                                    | 🚧    | 🚧   | 🚧  |
 
 Other topics not covered: quantized/compressed kv cache
 

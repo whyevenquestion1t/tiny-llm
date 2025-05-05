@@ -5,32 +5,87 @@ import mlx.core as mx
 
 class TinyKvCache:
     def update_and_fetch(
-        self, key: mx.array, value: mx.array, offset: int
-    ) -> tuple[mx.array, mx.array]:
+        self, key: mx.array, value: mx.array
+    ) -> tuple[mx.array, mx.array, int]:
         pass
+
+
+class BatchingKvCache(TinyKvCache):
+    def __init__(self, max_active_requests: int):
+        self.max_active_requests = max_active_requests
+        self.key_values = None
+        self.offset = 0
+
+    def update_and_fetch(
+        self, key: mx.array, value: mx.array
+    ) -> tuple[mx.array, mx.array, int]:
+        if self.key_values is None:
+            self.key_values = (key, value)
+            assert self.offset == 0
+            return key, value, 0
+        else:
+            B, H, S, D = key.shape
+            assert key.shape == value.shape
+            prev_keys, prev_values = self.key_values
+            assert prev_keys.shape == (B, H, self.offset, D)
+            assert prev_values.shape == (B, H, self.offset, D)
+            new_keys = mx.concat([prev_keys, key], axis=2)
+            new_values = mx.concat([prev_values, value], axis=2)
+            self.key_values = (new_keys, new_values)
+            start_offset = self.offset
+            self.offset += S
+            return new_keys, new_values, start_offset
+
+    def add_request(self, prefilled: TinyKvCache, id: int):
+        if id >= self.max_active_requests:
+            raise ValueError(f"Request id {id} is out of range")
+        if self.key_values is None:
+            keys, values = prefilled.keys_values
+            self.key_values = (
+                mx.zeros((self.max_active_requests, *keys.shape)),
+                mx.zeros((self.max_active_requests, *values.shape)),
+            )
+        else:
+            keys, values = prefilled.keys_values
+            cached_keys, cached_values = self.key_values
+            cached_keys[id, :, :, :, :] = keys
+            cached_values[id, :, :, :, :] = values
+            self.key_values = (cached_keys, cached_values)
+
+    def remove_request(self, id: int):
+        if self.key_values is None:
+            raise ValueError(f"Request id {id} is not in the cache")
+        cached_keys, cached_values = self.key_values
+        cached_keys[id, :, :, :, :] = 0
+        cached_values[id, :, :, :, :] = 0
 
 
 class TinyKvFullCache(TinyKvCache):
     def __init__(self):
         self.key_values = None
+        self.offset = 0
 
     def update_and_fetch(
-        self, key: mx.array, value: mx.array, offset: int
-    ) -> tuple[mx.array, mx.array]:
+        self, key: mx.array, value: mx.array
+    ) -> tuple[mx.array, mx.array, int]:
         if self.key_values is None:
-            assert offset == 0
+            assert self.offset == 0
             self.key_values = (key, value)
-            return key, value
+            B, H, S, D = key.shape
+            self.offset = S
+            return key, value, 0
         else:
-            B, H, _, D = key.shape
+            B, H, S, D = key.shape
             assert key.shape == value.shape
             prev_keys, prev_values = self.key_values
-            assert prev_keys.shape == (B, H, offset, D)
-            assert prev_values.shape == (B, H, offset, D)
+            assert prev_keys.shape == (B, H, self.offset, D)
+            assert prev_values.shape == (B, H, self.offset, D)
             new_keys = mx.concat([prev_keys, key], axis=2)
             new_values = mx.concat([prev_values, value], axis=2)
             self.key_values = (new_keys, new_values)
-            return new_keys, new_values
+            start_offset = self.offset
+            self.offset += S
+            return new_keys, new_values, start_offset
 
 
 class TinyKvRotatingCache(TinyKvCache):

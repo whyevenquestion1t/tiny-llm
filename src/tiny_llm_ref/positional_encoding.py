@@ -23,9 +23,7 @@ class RoPE:
         self.half_dims = half_dims
         self.traditional = traditional
 
-    def __call__(
-        self, x: mx.array, offset: slice | None = None
-    ) -> mx.array:
+    def __call__(self, x: mx.array, offset: slice | None = None) -> mx.array:
         N, S, H, D = x.shape
         # if offset is not None:
         #     assert len(offset) == S, f"offset {len(offset)} must be of length {s}"
@@ -55,4 +53,4 @@ class RoPE:
         else:
             y = mx.concat([real, imag], axis=-1)
             y = y.reshape(N, S, H, D)
-        return y
+        return y.astype(x.dtype)

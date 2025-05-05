@@ -25,9 +25,10 @@ dependencies = [
 build-ext-ref.cmd = "python build.py"
 build-ext-ref.working_dir = "src/extensions_ref"
 main.cmd = "python main.py"
+main-week1.cmd = "python main.py --loader week1"
+main-week2.cmd = "python main.py --loader week2"
 test.cmd = "pytest tests"
-test-week1-ref.cmd = "pytest tests_ref_impl_week1"
-test-week2-ref.cmd = "pytest tests_ref_impl_week2"
+test-refsol.cmd = "pytest tests_refsol"
 format = "ruff format"
 format-cpp.shell = "find src/extensions_ref -type file \\( -name '*.h' -or -name '*.cpp' \\) | xargs -n1 clang-format -i"
 

@@ -10,22 +10,29 @@ parser.add_argument(
     default="Give me a short introduction to large language model.",
 )
 parser.add_argument("--solution", type=str, default="tiny_llm")
+parser.add_argument("--loader", type=str, default="week1")
 parser.add_argument("--device", type=str, default="gpu")
 args = parser.parse_args()
 
 use_mlx = False
 if args.solution == "tiny_llm":
-    from tiny_llm import Qwen2Model, simple_generate
-
     print("Using your tiny_llm solution")
-elif args.solution == "tiny_llm_week1_ref" or args.solution == "week1_ref":
-    from tiny_llm_week1_ref import Qwen2Model, simple_generate
+    from tiny_llm import (
+        Qwen2ModelWeek1,
+        Qwen2ModelWeek2,
+        simple_generate,
+        simple_generate_with_kv_cache,
+    )
 
-    print("Using tiny_llm_week1_ref solution")
-elif args.solution == "tiny_llm_week2_ref" or args.solution == "week2_ref":
-    from tiny_llm_week2_ref import Qwen2Model, simple_generate
+elif args.solution == "tiny_llm_ref" or args.solution == "ref":
+    print("Using tiny_llm_ref solution")
+    from tiny_llm_ref import (
+        Qwen2ModelWeek1,
+        Qwen2ModelWeek2,
+        simple_generate,
+        simple_generate_with_kv_cache,
+    )
 
-    print("Using tiny_llm_week2_ref solution")
 elif args.solution == "mlx":
     use_mlx = True
     from mlx_lm.generate import stream_generate
@@ -44,7 +51,14 @@ with mx.stream(mx.gpu if args.device == "gpu" else mx.cpu):
     if use_mlx:
         tiny_llm_model = mlx_model
     else:
-        tiny_llm_model = Qwen2Model(mlx_model)
+        if args.loader == "week1":
+            print("Using Qwen2ModelWeek1 loader")
+            tiny_llm_model = Qwen2ModelWeek1(mlx_model)
+        elif args.loader == "week2":
+            print("Using Qwen2ModelWeek2 loader")
+            tiny_llm_model = Qwen2ModelWeek2(mlx_model)
+        else:
+            raise ValueError(f"Loader {args.loader} not supported")
     messages = [
         {"role": "system", "content": "You are a helpful assistant."},
         {"role": "user", "content": args.prompt},
@@ -53,7 +67,10 @@ with mx.stream(mx.gpu if args.device == "gpu" else mx.cpu):
         messages, tokenize=False, add_generation_prompt=True
     )
     if not use_mlx:
-        simple_generate(tiny_llm_model, tokenizer, prompt)
+        if args.loader == "week1":
+            simple_generate(tiny_llm_model, tokenizer, prompt)
+        elif args.loader == "week2":
+            simple_generate_with_kv_cache(tiny_llm_model, tokenizer, prompt)
     else:
         for resp in stream_generate(tiny_llm_model, tokenizer, prompt):
             print(resp.text, end="", flush=True)

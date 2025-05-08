@@ -7,21 +7,25 @@ parser.add_argument("--model", type=str, default="Qwen/Qwen2-7B-Instruct-MLX")
 parser.add_argument(
     "--prompt",
     action="append",
-    type=str,
-    default="Give me a short introduction to large language model.",
+    type=list[str],
+    default=[
+        "Give me a short introduction to large language model.",
+        "Where is Shanghai?",
+        "What is bubble tea?",
+    ],
 )
 parser.add_argument("--solution", type=str, default="tiny_llm")
 parser.add_argument("--device", type=str, default="gpu")
 args = parser.parse_args()
 
 if args.solution == "tiny_llm":
-    from tiny_llm import Qwen2Model, batch_generate
-
     print("Using your tiny_llm solution")
-elif args.solution == "tiny_llm_week2_ref" or args.solution == "week2_ref":
-    from tiny_llm_week2_ref import Qwen2Model, batch_generate
+    from tiny_llm import Qwen2ModelWeek2, batch_generate
 
-    print("Using tiny_llm_week2_ref solution")
+elif args.solution == "tiny_llm_ref" or args.solution == "ref":
+    print("Using tiny_llm_ref solution")
+    from tiny_llm_ref import Qwen2ModelWeek2, batch_generate
+
 else:
     raise ValueError(f"Solution {args.solution} not supported")
 
@@ -32,9 +36,10 @@ mlx_model, tokenizer = load(
 )
 
 with mx.stream(mx.gpu if args.device == "gpu" else mx.cpu):
-    tiny_llm_model = Qwen2Model(mlx_model)
-    all_prompts = []
-    for prompt in args.prompt:
+    tiny_llm_model = Qwen2ModelWeek2(mlx_model)
+    prompts = []
+    for idx, prompt in enumerate(args.prompt):
+        print(f"Prompt {idx}: {prompt}")
         messages = [
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": prompt},
@@ -42,5 +47,5 @@ with mx.stream(mx.gpu if args.device == "gpu" else mx.cpu):
         prompt = tokenizer.apply_chat_template(
             messages, tokenize=False, add_generation_prompt=True
         )
-        all_prompts.append(prompt)
-    batch_generate(tiny_llm_model, tokenizer, all_prompts)
+        prompts.append(prompt)
+    batch_generate(tiny_llm_model, tokenizer, prompts)

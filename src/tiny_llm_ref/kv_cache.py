@@ -40,13 +40,13 @@ class BatchingKvCache(TinyKvCache):
         if id >= self.max_active_requests:
             raise ValueError(f"Request id {id} is out of range")
         if self.key_values is None:
-            keys, values = prefilled.keys_values
+            keys, values = prefilled.key_values
             self.key_values = (
                 mx.zeros((self.max_active_requests, *keys.shape)),
                 mx.zeros((self.max_active_requests, *values.shape)),
             )
         else:
-            keys, values = prefilled.keys_values
+            keys, values = prefilled.key_values
             cached_keys, cached_values = self.key_values
             cached_keys[id, :, :, :, :] = keys
             cached_values[id, :, :, :, :] = values

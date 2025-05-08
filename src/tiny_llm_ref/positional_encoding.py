@@ -23,10 +23,20 @@ class RoPE:
         self.half_dims = half_dims
         self.traditional = traditional
 
-    def __call__(self, x: mx.array, offset: slice | None = None) -> mx.array:
+    def __call__(
+        self, x: mx.array, offset: list[slice] | slice | None = None
+    ) -> mx.array:
         N, S, H, D = x.shape
-        # if offset is not None:
-        #     assert len(offset) == S, f"offset {len(offset)} must be of length {s}"
+        if offset is not None:
+            if isinstance(offset, slice):
+                assert offset.stop - offset.start == S, f"offset must be of length {S}"
+            elif isinstance(offset, list):
+                assert len(offset) == N, (
+                    f"offsets must have the same length as batch size {N}"
+                )
+                for o in offset:
+                    assert o.stop - o.start == S, f"offset must be of length {S}"
+                offset = mx.array([list(range(i.start, i.stop)) for i in offset])
         cos_basis = (
             self.cos_freqs[:S, :] if offset is None else self.cos_freqs[offset, :]
         )
@@ -42,8 +52,8 @@ class RoPE:
             x1 = x[..., 0 : self.half_dims]
             x2 = x[..., self.half_dims : self.dims]
         # reshape basis: (1, s, 1, dims // 2, 2)
-        cos_basis = cos_basis.reshape(S, 1, self.half_dims)
-        sin_basis = sin_basis.reshape(S, 1, self.half_dims)
+        cos_basis = cos_basis.reshape(-1, S, 1, self.half_dims)
+        sin_basis = sin_basis.reshape(-1, S, 1, self.half_dims)
         # manually doing complex number multiplication..
         real = mx.multiply(x1, cos_basis) - mx.multiply(x2, sin_basis)
         imag = mx.multiply(x2, cos_basis) + mx.multiply(x1, sin_basis)

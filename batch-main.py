@@ -55,5 +55,5 @@ with mx.stream(mx.gpu if args.device == "gpu" else mx.cpu):
         prompts.append(prompt)
     result = batch_generate(tiny_llm_model, tokenizer, prompts)
     for prompt_idx, text in result:
-        print(f"Q: {prompt_idx}")
+        print(f"Q: {args.prompt[prompt_idx]}")
         print(f"A: {text}")

@@ -61,7 +61,9 @@ def simple_generate_with_kv_cache(
         tokens = token
 
 
-def batch_generate(model: any, tokenizer: TokenizerWrapper, prompts: list[str], max_seq_len = 64):
+def batch_generate(
+    model: any, tokenizer: TokenizerWrapper, prompts: list[str], max_seq_len=64
+):
     MAX_REQUESTS = 5
     is_idle = [True] * MAX_REQUESTS
     prompt_idx = [0] * MAX_REQUESTS
@@ -114,7 +116,9 @@ def batch_generate(model: any, tokenizer: TokenizerWrapper, prompts: list[str], 
                     )
                     detokenizers[i].add_token(token.item())
                     print(f"Prefilling prompt {idx} at request {i}", flush=True)
-                    print(f"(Prefill) {idx}: " + detokenizers[i].last_segment, flush=True)
+                    print(
+                        f"(Prefill) {idx}: " + detokenizers[i].last_segment, flush=True
+                    )
                     prompt_idx[i] = idx
                     is_idle[i] = False
                     for prefill_cache, batch_cache in zip(prefill_kv_cache, kv_cache):
@@ -130,13 +134,22 @@ def batch_generate(model: any, tokenizer: TokenizerWrapper, prompts: list[str], 
         for i in range(MAX_REQUESTS):
             if not is_idle[i]:
                 detokenizers[i].add_token(next_tokens[i].item())
-                if next_tokens[i].item() == tokenizer.eos_token_id or offsets[i] >= max_seq_len:
-                    print(f"(Finished) {prompt_idx[i]}: " + detokenizers[i].text, flush=True)
+                if (
+                    next_tokens[i].item() == tokenizer.eos_token_id
+                    or offsets[i] >= max_seq_len
+                ):
+                    print(
+                        f"(Finished) {prompt_idx[i]}: " + detokenizers[i].text,
+                        flush=True,
+                    )
                     result.append((prompt_idx[i], detokenizers[i].text))
                     print(f"Removing request {i}", flush=True)
                     batch_cache.remove_request(i)
                     is_idle[i] = True
                     continue
                 else:
-                    print(f"(In Progress) {prompt_idx[i]}: " + detokenizers[i].text, flush=True)
+                    print(
+                        f"(In Progress) {prompt_idx[i]}: " + detokenizers[i].text,
+                        flush=True,
+                    )
     return result

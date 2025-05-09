@@ -9,9 +9,14 @@ parser.add_argument(
     action="append",
     type=list[str],
     default=[
-        "Give me a short introduction to large language model.",
         "Where is Shanghai?",
-        "What is bubble tea?",
+        "What is the capital of France?",
+        "Where is New York City?",
+        "Where is Tokyo?",
+        "What is the capital of China?",
+        "Where is Pittsburgh?",
+        "Where is Vancouver?",
+        "Where is Toronto?",
     ],
 )
 parser.add_argument("--solution", type=str, default="tiny_llm")
@@ -48,4 +53,7 @@ with mx.stream(mx.gpu if args.device == "gpu" else mx.cpu):
             messages, tokenize=False, add_generation_prompt=True
         )
         prompts.append(prompt)
-    batch_generate(tiny_llm_model, tokenizer, prompts)
+    result = batch_generate(tiny_llm_model, tokenizer, prompts)
+    for prompt_idx, text in result:
+        print(f"Q: {prompt_idx}")
+        print(f"A: {text}")

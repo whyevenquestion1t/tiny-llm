@@ -48,7 +48,7 @@ class Qwen2MultiHeadAttention:
     def __call__(
         self,
         x: mx.array,
-        offset: int,
+        offsets: list[int],
         cache: TinyKvCache,
         mask: mx.array | str | None = None,
     ) -> mx.array:
@@ -62,12 +62,9 @@ class Qwen2MultiHeadAttention:
         projection_v = quantized_linear(x, self.wv, bias=self.bv).reshape(
             B, L, self.num_kv_heads, self.head_dim
         )
-        projection_q = self.rope(
-            projection_q, offset=slice(cache.offset, cache.offset + L)
-        )
-        projection_k = self.rope(
-            projection_k, offset=slice(cache.offset, cache.offset + L)
-        )
+        offset_slice = [slice(int(i), int(i + L)) for i in offsets]
+        projection_q = self.rope(projection_q, offset=offset_slice)
+        projection_k = self.rope(projection_k, offset=offset_slice)
         projection_q = projection_q.transpose(0, 2, 1, 3)
         projection_k = projection_k.transpose(0, 2, 1, 3)
         projection_v = projection_v.transpose(0, 2, 1, 3)

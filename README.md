@@ -39,7 +39,7 @@ You may join skyzh's Discord server and study with the tiny-llm community.
 | 2.4            | Flash Attention 2 - CPU                                     | ✅    | 🚧   | 🚧  |
 | 2.5            | Flash Attention 2 - GPU                                     | ✅    | 🚧   | 🚧  |
 | 2.6            | Continuous Batching                                         | ✅    | 🚧   | 🚧  |
-| 2.7            | Chunked Prefill                                             | 🚧    | 🚧   | 🚧  |
+| 2.7            | Chunked Prefill                                             | ✅    | 🚧   | 🚧  |
 | 3.1            | Paged Attention - Part 1                                    | 🚧    | 🚧   | 🚧  |
 | 3.2            | Paged Attention - Part 2                                    | 🚧    | 🚧   | 🚧  |
 | 3.3            | MoE (Mixture of Experts)                                    | 🚧    | 🚧   | 🚧  |

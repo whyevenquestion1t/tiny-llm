@@ -40,8 +40,8 @@ def scaled_dot_product_attention_grouped(
     scores = mx.matmul(query, key.swapaxes(-2, -1)) * factor
     if mask is not None:
         if mask == "causal":
-            mask = 1 - mx.tril(mx.ones((L, S)))
-            mask = mx.where(mask, mx.array(-mx.inf), mx.array(0))
+            mask = mx.tril(mx.ones((L, S)), k=S - L)
+            mask = mx.where(mask, mx.array(0), mx.array(-mx.inf))
             scores = scores + mask
         else:
             mask = mask.reshape(-1, H, n_repeats, mask.shape[-2], mask.shape[-1])

@@ -20,3 +20,4 @@ https://github.com/ml-explore/mlx/blob/main/mlx/backend/metal/kernels/sdpa_vecto
 
 attention mask why
 https://www.shashankshekhar.com/blog/apple-metal-vs-nvidia-cuda
+https://arxiv.org/pdf/2308.16369

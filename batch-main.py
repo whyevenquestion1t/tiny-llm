@@ -1,24 +1,36 @@
 from mlx_lm import load
 import mlx.core as mx
 import argparse
+from pathlib import Path
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--model", type=str, default="Qwen/Qwen2-7B-Instruct-MLX")
-parser.add_argument(
-    "--prompt",
-    action="append",
-    type=list[str],
-    default=[
-        "Where is Shanghai?",
-        "What is the capital of France?",
-        "Where is New York City?",
-        "Where is Tokyo?",
-        "What is the capital of China?",
-        "Where is Pittsburgh?",
-        "Where is Vancouver?",
-        "Where is Toronto?",
-    ],
-)
+# prompts = [
+#     "Where is Shanghai?",
+#     "What is the capital of France?",
+#     "Where is New York City?",
+#     "Where is Tokyo?",
+#     "What is the capital of China?",
+#     "Where is Pittsburgh?",
+#     "Where is Vancouver?",
+#     "Where is Toronto?",
+# ]
+
+shanghai_wikipedia = """
+Shanghai[a] is a direct-administered municipality and the most populous urban area in China. The city is located on the Chinese shoreline on the southern estuary of the Yangtze River, with the Huangpu River flowing through it. The population of the city proper is the second largest in the world after Chongqing, with around 24.87 million inhabitants in 2023, while the urban area is the most populous in China, with 29.87 million residents. As of 2022, the Greater Shanghai metropolitan area was estimated to produce a gross metropolitan product (nominal) of nearly 13 trillion RMB ($1.9 trillion).[13] Shanghai is one of the world's major centers for finance, business and economics, research, science and technology, manufacturing, transportation, tourism, and culture. The Port of Shanghai is the world's busiest container port.
+"""
+
+prompts = [
+    shanghai_wikipedia + "Where is Shanghai?",
+    shanghai_wikipedia + "How much is the population of Shanghai?",
+    shanghai_wikipedia + "What is the GDP of Shanghai?",
+    shanghai_wikipedia + "What is the population of Shanghai?",
+    shanghai_wikipedia + "What is the second largest city proper in China?",
+    shanghai_wikipedia + "What is Shanghai known for?",
+    shanghai_wikipedia + "What are the rivers in Shanghai?",
+    shanghai_wikipedia + "Shanghai is the major center for what?",
+]
+
 parser.add_argument("--solution", type=str, default="tiny_llm")
 parser.add_argument("--device", type=str, default="gpu")
 args = parser.parse_args()
@@ -42,8 +54,8 @@ mlx_model, tokenizer = load(
 
 with mx.stream(mx.gpu if args.device == "gpu" else mx.cpu):
     tiny_llm_model = Qwen2ModelWeek2(mlx_model)
-    prompts = []
-    for idx, prompt in enumerate(args.prompt):
+    encoded_prompts = []
+    for idx, prompt in enumerate(prompts):
         print(f"Prompt {idx}: {prompt}")
         messages = [
             {"role": "system", "content": "You are a helpful assistant."},
@@ -52,8 +64,8 @@ with mx.stream(mx.gpu if args.device == "gpu" else mx.cpu):
         prompt = tokenizer.apply_chat_template(
             messages, tokenize=False, add_generation_prompt=True
         )
-        prompts.append(prompt)
-    result = batch_generate(tiny_llm_model, tokenizer, prompts)
+        encoded_prompts.append(prompt)
+    result = batch_generate(tiny_llm_model, tokenizer, encoded_prompts)
     for prompt_idx, text in result:
-        print(f"Q: {args.prompt[prompt_idx]}")
+        print(f"Q: {prompts[prompt_idx]}")
         print(f"A: {text}")

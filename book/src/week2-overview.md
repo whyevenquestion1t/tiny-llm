@@ -19,3 +19,4 @@ https://triton-lang.org/main/getting-started/tutorials/06-fused-attention.html
 https://github.com/ml-explore/mlx/blob/main/mlx/backend/metal/kernels/sdpa_vector.h
 
 attention mask why
+https://www.shashankshekhar.com/blog/apple-metal-vs-nvidia-cuda

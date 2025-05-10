@@ -60,15 +60,23 @@ class BatchingKvCache(TinyKvCache):
                 mx.zeros((self.max_active_requests, H, self.max_seq_len, D)),
                 mx.zeros((self.max_active_requests, H, self.max_seq_len, D)),
             )
+        if L > self.max_seq_len:
+            keys = keys[:, :, -self.max_seq_len :, :]
+            values = values[:, :, -self.max_seq_len :, :]
+            take_size = self.max_seq_len
+        else:
+            take_size = L
         cached_keys, cached_values = self.key_values
         # Firstly, fill the cache with zeros
         cached_keys[id, :, :, :] = 0
         cached_values[id, :, :, :] = 0
         # Then, fill the cache with the prefilled values up to self.head (may wrap)
-        start_pos = (self.head - L + self.max_seq_len) % self.max_seq_len
-        if start_pos + L <= self.max_seq_len:
-            cached_keys[id, :, start_pos : start_pos + L, :] = keys[0, :, :, :]
-            cached_values[id, :, start_pos : start_pos + L, :] = values[0, :, :, :]
+        start_pos = (self.head - take_size + self.max_seq_len) % self.max_seq_len
+        if start_pos + take_size <= self.max_seq_len:
+            cached_keys[id, :, start_pos : start_pos + take_size, :] = keys[0, :, :, :]
+            cached_values[id, :, start_pos : start_pos + take_size, :] = values[
+                0, :, :, :
+            ]
         else:
             cached_keys[id, :, start_pos : self.max_seq_len, :] = keys[
                 0, :, : self.max_seq_len - start_pos, :
@@ -76,12 +84,12 @@ class BatchingKvCache(TinyKvCache):
             cached_values[id, :, start_pos : self.max_seq_len, :] = values[
                 0, :, : self.max_seq_len - start_pos, :
             ]
-            cached_keys[id, :, : L - (self.max_seq_len - start_pos), :] = keys[
+            cached_keys[id, :, : take_size - (self.max_seq_len - start_pos), :] = keys[
                 0, :, self.max_seq_len - start_pos :, :
             ]
-            cached_values[id, :, : L - (self.max_seq_len - start_pos), :] = values[
-                0, :, self.max_seq_len - start_pos :, :
-            ]
+            cached_values[id, :, : take_size - (self.max_seq_len - start_pos), :] = (
+                values[0, :, self.max_seq_len - start_pos :, :]
+            )
         self.head_offsets[id] = L
         self.key_values = (cached_keys, cached_values)
 

@@ -46,6 +46,8 @@ $$
   \text{Attention} = \text{softmax}(\frac{QK^T}{\sqrt{d_k}} + M)V
 $$
 
+Note that $\frac{1}{\sqrt{d_k}}$ is the scale factor. The user might specify their own scale factor or use the default one.
+
 ```
 L is seq_len, in PyTorch API it's S (source len)
 D is head_dim
@@ -54,6 +56,7 @@ key: N.. x L x D
 value: N.. x L x D
 query: N.. x L x D
 output: N.. x L x D
+scale = 1/sqrt(D) if not specified
 ```
 
 You may use `softmax` provided by mlx and implement it later in week 2.

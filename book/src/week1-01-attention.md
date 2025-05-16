@@ -27,11 +27,15 @@ the dimension of the embedding for a given head in the sequence.
 So, for example, if we have a sequence of 1024 tokens, where each of the token has a 512-dimensional embedding (head_dim),
 we will pass a tensor of the shape `N.. x 1024 x 512` to the attention layer.
 
-## Task 1: Implement `scaled_dot_product_attention`
+## Task 1: Implement `scaled_dot_product_attention_simple`
 
 In this task, we will implement the scaled dot product attention function. We assume the input tensors (Q, K, V) have
 the same dimensions. In the next few chapters, we will support more variants of attentions that might not have the same
 dimensions for all tensors.
+
+```
+src/tiny_llm/attention.py
+```
 
 **📚 Readings**
 
@@ -80,7 +84,7 @@ At the end of this task, you should be able to pass the following tests:
 pdm run test --week 1 --day 1 -- -k task_1
 ```
 
-## Task 2: Implement `MultiHeadAttention`
+## Task 2: Implement `SimpleMultiHeadAttention`
 
 In this task, we will implement the multi-head attention layer.
 
@@ -91,16 +95,16 @@ src/tiny_llm/attention.py
 **📚 Readings**
 
 * [Annotated Transformer](https://nlp.seas.harvard.edu/annotated-transformer/)
-* [PyTorch MultiHeadAttention API](https://pytorch.org/docs/stable/generated/torch.nn.MultiheadAttention.html) (assume dim_k=dim_v=dim_q and H_k=H_v=H_q)
-* [MLX MultiHeadAttention API](https://ml-explore.github.io/mlx/build/html/python/nn/_autosummary/mlx.nn.MultiHeadAttention.html) (assume dim_k=dim_v=dim_q and H_k=H_v=H_q)
+* [PyTorch SimpleMultiHeadAttention API](https://pytorch.org/docs/stable/generated/torch.nn.SimpleMultiHeadAttention.html) (assume dim_k=dim_v=dim_q and H_k=H_v=H_q)
+* [MLX SimpleMultiHeadAttention API](https://ml-explore.github.io/mlx/build/html/python/nn/_autosummary/mlx.nn.SimpleMultiHeadAttention.html) (assume dim_k=dim_v=dim_q and H_k=H_v=H_q)
 * [The Illustrated GPT-2 (Visualizing Transformer Language Models)](https://jalammar.github.io/illustrated-gpt2) helps you better understand what key, value, and query are.
 
-Implement `MultiHeadAttention`. The layer takes a batch of vectors, maps it through the K, V, Q weight matrixes, and use the attention function we implemented in task 1 to compute the result. The output needs to be mapped using the O
+Implement `SimpleMultiHeadAttention`. The layer takes a batch of vectors, maps it through the K, V, Q weight matrixes, and use the attention function we implemented in task 1 to compute the result. The output needs to be mapped using the O
 weight matrix.
 
 You will also need to implement the `linear` function in `basics.py` first. For `linear`, it takes a tensor of the shape `N.. x I`, a weight matrix of the shape `O x I`, and a bias vector of the shape `O`. The output is of the shape `N.. x O`. `I` is the input dimension and `O` is the output dimension.
 
-For the `MultiHeadAttention` layer, the input tensors `query`, `key`, `value` have the shape `N x L x E`, where `E` is the dimension of the
+For the `SimpleMultiHeadAttention` layer, the input tensors `query`, `key`, `value` have the shape `N x L x E`, where `E` is the dimension of the
 embedding for a given token in the sequence. The `K/Q/V` weight matrixes will map the tensor into key, value, and query
 separately, where the dimension `E` will be mapped into a dimension of size `H x D`, which means that the token embedding
 gets mapped into `H` heads, each with a dimension of `D`. You can directly reshape the tensor to split the `H x D` dimension

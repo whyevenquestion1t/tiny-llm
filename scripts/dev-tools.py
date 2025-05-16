@@ -16,14 +16,19 @@ def copy_test(args, skip_if_exists=False):
 def test(args):
     if args.week and args.day:
         copy_test(args, skip_if_exists=True)
-        pytest.main(["-v", f"tests/test_week_{args.week}_day_{args.day}.py"] + args.remainders)
+        pytest.main(
+            ["-v", f"tests/test_week_{args.week}_day_{args.day}.py"] + args.remainders
+        )
     else:
         pytest.main(["-v", "tests"] + args.remainders)
 
 
 def test_refsol(args):
     if args.week and args.day:
-        pytest.main(["-v", f"tests_refsol/test_week_{args.week}_day_{args.day}.py"] + args.remainders)
+        pytest.main(
+            ["-v", f"tests_refsol/test_week_{args.week}_day_{args.day}.py"]
+            + args.remainders
+        )
     else:
         pytest.main(["-v", "tests_refsol"] + args.remainders)
 

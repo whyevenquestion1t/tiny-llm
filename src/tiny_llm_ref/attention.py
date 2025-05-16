@@ -75,7 +75,7 @@ def flash_attention(
     return result.reshape(*B, H_q, S, E)
 
 
-class MultiHeadAttention:
+class SimpleMultiHeadAttention:
     def __init__(
         self,
         hidden_size: int,

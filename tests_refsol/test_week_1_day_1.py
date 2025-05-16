@@ -129,7 +129,7 @@ def test_task_2_simple_multi_head_attention(stream: mx.Stream, precision: np.dty
                 attn_mask=torch.tensor(mask, device=TORCH_DEVICE),
             )
             reference_output = reference_output.transpose(0, 1)
-            user_output = MultiHeadAttention(
+            user_output = SimpleMultiHeadAttention(
                 H * D,
                 H,
                 mx.array(q_proj_weight),

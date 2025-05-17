@@ -35,8 +35,8 @@ pdm install -v # this will automatically create a virtual environment and instal
 
 ```bash
 pdm run python check.py
-# The reference solution should pass all the tests
-pdm run test-week1-ref
+# The reference solution should pass all the *week 1* tests
+pdm run test-refsol -- -- -k week_1
 ```
 
 ## Run Unit Tests
@@ -50,19 +50,15 @@ pdm run test
 ## Download the Model Parameters
 
 We will use the Qwen2-7B-Instruct model for this course. It takes ~20GB of memory in week 1 to load the model parameters.
-If you do not have enough memory, you can consider using the smaller 0.5B model. (We will make the course compatible with
-it in the future; meanwhile, you have to figure out things on your own if you use the 0.5B model. Likely, this only matters
-after week 1 day 6 when you start to load the model parameters.)
+If you do not have enough memory, you can consider using the smaller 0.5B model.
 
 Follow the guide of [this page](https://huggingface.co/docs/huggingface_hub/main/en/guides/cli) to install the huggingface
-cli. You should install it in your user directory/globally instead of in the tiny-llm virtual environment created by
-pdm.
+cli.
 
 The model parameters are hosted on Hugging Face. Once you authenticated your cli with the credentials, you can download
 them with:
 
 ```bash
-# do not do this in the virtual environment created by pdm
 huggingface-cli login
 huggingface-cli download Qwen/Qwen2-7B-Instruct-MLX
 ```
@@ -70,7 +66,7 @@ huggingface-cli download Qwen/Qwen2-7B-Instruct-MLX
 Then, you can run:
 
 ```bash
-pdm run main --solution week1_ref
+pdm run main --solution ref --loader week1
 ```
 
 It should load the model and print some text.

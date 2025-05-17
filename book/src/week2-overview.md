@@ -24,3 +24,5 @@ https://arxiv.org/pdf/2308.16369
 
 padding
 https://huggingface.co/docs/transformers/pad_truncation
+
+https://siboehm.com/articles/22/CUDA-MMM

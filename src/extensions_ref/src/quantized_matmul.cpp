@@ -62,6 +62,9 @@ mx::array quantized_matmul(const mx::array &scales,         // Input array scale
     if (b.shape()[1] != scales.shape()[1] * group_size / 8) {
         throw std::runtime_error("quantized_matmul: a must have the same number of columns as scales");
     }
+    if (a.shape()[1] != b.shape()[1] * 8) {
+        throw std::runtime_error("quantized_matmul: a must have the same number of columns as b");
+    }
 
     return mx::array(
         /* const mx::Shape& shape = */ out_shape,
@@ -166,10 +169,6 @@ void QuantizedMatmul::eval_gpu(const std::vector<mx::array> &inputs, std::vector
     auto &compute_encoder = d.get_command_encoder(s.index);
     compute_encoder.set_compute_pipeline_state(kernel);
 
-    // Kernel parameters are registered with buffer indices corresponding to
-    // those in the kernel declaration at axpby.metal
-    int ndim = out.ndim();
-
     // Encode input arrays to kernel
     compute_encoder.set_input_array(scales, 0);
     compute_encoder.set_input_array(biases, 1);
@@ -189,14 +188,26 @@ void QuantizedMatmul::eval_gpu(const std::vector<mx::array> &inputs, std::vector
     int N = a.shape()[1];
     int K = b.shape()[0];
 
+    if (N % group_size_ != 0) {
+        throw std::runtime_error("quantized_matmul: N must be divisible by group_size");
+    }
+
     // Encode matrix parameters
     compute_encoder.set_bytes(M, 5);
     compute_encoder.set_bytes(N, 6);
     compute_encoder.set_bytes(K, 7);
 
     size_t tgp_size = kernel->maxTotalThreadsPerThreadgroup();
-    MTL::Size num_threadgroups = MTL::Size((M * K + tgp_size - 1) / tgp_size, 1, 1);
-    MTL::Size num_threads_per_group = MTL::Size(tgp_size, 1, 1);
+    const int x_size = 32;
+    const int y_size = tgp_size / x_size;
+    if (tgp_size < x_size * y_size) {
+        throw std::runtime_error("quantized_matmul: tgp_size must be larger than x*y");
+    }
+    MTL::Size num_threadgroups = MTL::Size((M + x_size - 1) / x_size, (K + y_size - 1) / y_size, 1);
+    MTL::Size num_threads_per_group = MTL::Size(x_size, y_size, 1);
+
+    // MTL::Size num_threadgroups = MTL::Size((M * K + tgp_size - 1) / tgp_size, 1, 1);
+    // MTL::Size num_threads_per_group = MTL::Size(tgp_size, 1, 1);
 
     // Launch the grid with the given number of threads divided among
     // the given threadgroups

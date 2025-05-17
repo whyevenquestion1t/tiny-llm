@@ -7,40 +7,41 @@
     device const int &M [[buffer(5)]],
     device const int &N [[buffer(6)]],
     device const int &K [[buffer(7)]],
-    uint group_id [[threadgroup_position_in_grid]],
-    uint thread_id [[thread_position_in_threadgroup]],
-    uint threads_per_threadgroup [[threads_per_threadgroup]]) {
+    uint3 group_id [[threadgroup_position_in_grid]],
+    uint3 thread_id [[thread_position_in_threadgroup]],
+    uint3 threads_per_threadgroup [[threads_per_threadgroup]]) {
     const int group_size = 64;
     const int bits = 4;
     const int packs_per_item = 32 / bits;
-    const int item_mask = (1 << bits) - 1;
     const int groups_per_row = N / group_size;
-    // Each threadgroup processes an element in the output matrix
-    const int64_t idx = group_id * threads_per_threadgroup + thread_id;
-    const int64_t i = idx / K;
-    const int64_t k = idx % K;
+    // Each thread processes an element in the output matrix
+    const int i = group_id.x * threads_per_threadgroup.x + thread_id.x;
+    const int k = group_id.y * threads_per_threadgroup.y + thread_id.y;
     float sum = 0;
-    for (int group_idx = 0; group_idx < groups_per_row; group_idx++) {
-        const int64_t scales_biases_loc = k * groups_per_row + group_idx;
-        const float scale = scales[scales_biases_loc];
-        const float bias = biases[scales_biases_loc];
-        int64_t b_loc = (k * N + group_idx * group_size) / 8;
-        int64_t a_loc = i * N + group_idx * group_size;
-        for (int item_idx = 0; item_idx < group_size; item_idx += packs_per_item) {
-            const uint32_t b_val = b[b_loc];
-            thread const uint32_t *b_val_ref = &b_val;
-            thread const uint8_t *b_bytes = reinterpret_cast<thread const uint8_t *>(b_val_ref);
-            for (int pack_idx = 0; pack_idx < packs_per_item; pack_idx++) {
-                const uint8_t item_val = (b_bytes[pack_idx / 2] >> ((pack_idx % 2) * bits)) & item_mask;
-                const float b_val = static_cast<float>(item_val) * scale + bias;
-                const float a_val = a[a_loc];
-                sum += a_val * b_val;
-                a_loc += 1;
-            }
-            b_loc += 1;
-        }
-    }
+    int scales_biases_loc = k * groups_per_row;
+    const int mask = (1 << bits) - 1;
+    // A: M * N, B: K * N where N gets quantized
     if (i < M && k < K) {
+        int b_loc = k * N / packs_per_item;
+        int a_loc = i * N;
+        for (int group_idx = 0; group_idx < groups_per_row; group_idx++) {
+            const float scale = scales[scales_biases_loc];
+            const float bias = biases[scales_biases_loc];
+            for (int item_idx = 0; item_idx < group_size; item_idx += packs_per_item) {
+                uint32_t b_val_packed = b[b_loc];
+                sum += (static_cast<float>((b_val_packed >> 0) & mask) * scale + bias) * static_cast<float>(a[a_loc]);
+                sum += (static_cast<float>((b_val_packed >> 4) & mask) * scale + bias) * static_cast<float>(a[a_loc + 1]);
+                sum += (static_cast<float>((b_val_packed >> 8) & mask) * scale + bias) * static_cast<float>(a[a_loc + 2]);
+                sum += (static_cast<float>((b_val_packed >> 12) & mask) * scale + bias) * static_cast<float>(a[a_loc + 3]);
+                sum += (static_cast<float>((b_val_packed >> 16) & mask) * scale + bias) * static_cast<float>(a[a_loc + 4]);
+                sum += (static_cast<float>((b_val_packed >> 20) & mask) * scale + bias) * static_cast<float>(a[a_loc + 5]);
+                sum += (static_cast<float>((b_val_packed >> 24) & mask) * scale + bias) * static_cast<float>(a[a_loc + 6]);
+                sum += (static_cast<float>((b_val_packed >> 28) & mask) * scale + bias) * static_cast<float>(a[a_loc + 7]);
+                a_loc += packs_per_item;
+                b_loc += 1;
+            }
+            scales_biases_loc += 1;
+        }
         out[i * K + k] = sum;
     }
 }

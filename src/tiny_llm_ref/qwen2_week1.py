@@ -48,6 +48,7 @@ class Qwen2MultiHeadAttention:
         self,
         x: mx.array,
         offset: int,
+        mask: mx.array | str | None = None,
     ) -> mx.array:
         B, L, _ = x.shape
         projection_q = linear(x, self.wq, bias=self.bq).reshape(
@@ -69,6 +70,7 @@ class Qwen2MultiHeadAttention:
             projection_k.astype(mx.float32),
             projection_v.astype(mx.float32),
             scale=self.scale,
+            mask=mask,
         ).astype(x.dtype)
         x = x.transpose(0, 2, 1, 3).reshape(B, L, self.hidden_size)
         return linear(x, self.wo)
@@ -142,8 +144,9 @@ class Qwen2TransformerBlock:
         self,
         x: mx.array,
         offset: int,
+        mask: mx.array | str | None = None,
     ) -> mx.array:
-        r = self.self_attn(self.input_layernorm(x), offset)
+        r = self.self_attn(self.input_layernorm(x), offset, mask)
         h = x + r
         r = self.mlp(self.post_attention_layernorm(h))
         out = h + r
@@ -208,7 +211,10 @@ class Qwen2ModelWeek1:
             weight=mlx_model.model.norm.weight.astype(precision),
             eps=mlx_model.args.rms_norm_eps,
         )
-        self.w_lm_head = dequantize_linear(mlx_model.lm_head)
+        if not mlx_model.args.tie_word_embeddings:
+            self.w_lm_head = dequantize_linear(mlx_model.lm_head)
+        else:
+            self.w_lm_head = None
         self.mlx_model = mlx_model
 
     def __call__(
@@ -218,6 +224,11 @@ class Qwen2ModelWeek1:
     ) -> mx.array:
         h = self.embedding(inputs)
         for layer in range(self.num_hidden_layers):
-            h = self.layers_inner[layer](h, offset)
+            h = self.layers_inner[layer](
+                h, offset, mask="causal" if h.shape[1] > 1 else None
+            )
         h = self.norm(h)
-        return linear(h, self.w_lm_head)
+        if self.w_lm_head is not None:
+            return linear(h, self.w_lm_head)
+        else:
+            return self.embedding.as_linear(h)

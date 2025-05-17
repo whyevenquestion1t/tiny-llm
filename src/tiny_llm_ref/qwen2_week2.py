@@ -238,7 +238,10 @@ class Qwen2ModelWeek2:
             weight=mlx_model.model.norm.weight.astype(precision),
             eps=mlx_model.args.rms_norm_eps,
         )
-        self.w_lm_head = QuantizedWeights.from_mlx_layer(mlx_model.lm_head)
+        if not mlx_model.args.tie_word_embeddings:
+            self.w_lm_head = QuantizedWeights.from_mlx_layer(mlx_model.lm_head)
+        else:
+            self.w_lm_head = None
         self.mlx_model = mlx_model
 
     def __call__(
@@ -253,4 +256,7 @@ class Qwen2ModelWeek2:
                 h, offset, cache[layer], mask="causal" if h.shape[1] > 1 else None
             )
         h = self.norm(h)
-        return quantized_linear(h, self.w_lm_head)
+        if self.w_lm_head is not None:
+            return quantized_linear(h, self.w_lm_head)
+        else:
+            return self.embedding.as_linear(h)

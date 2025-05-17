@@ -1,4 +1,5 @@
 import mlx.core as mx
+from .basics import linear
 
 
 class Embedding:
@@ -9,3 +10,6 @@ class Embedding:
 
     def __call__(self, x: mx.array) -> mx.array:
         return self.weight[x, :]
+
+    def as_linear(self, x: mx.array) -> mx.array:
+        return linear(x, self.weight)

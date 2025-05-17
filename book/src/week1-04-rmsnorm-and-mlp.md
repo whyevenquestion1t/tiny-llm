@@ -50,7 +50,7 @@ output: N.. x D
 You can test your implementation by running:
 
 ```bash
-pdm run test -k week_1_day_4_task_1 -v
+pdm run test --week 1 --day 4 -- -k task_1
 ```
 
 ## Task 2: Implement the MLP Block
@@ -111,8 +111,16 @@ output: N.. x L x E
 ```
 
 You can test your implementation by running:
+
 ```bash
-pdm run test -k week_1_day_4_task_2 -v
+pdm run test --week 1 --day 4 -- -k task_2
 ```
+
+At the end of the day, you should be able to pass all tests of this day:
+
+```bash
+pdm run test --week 1 --day 4
+```
+
 
 {{#include copyright.md}}

@@ -6,6 +6,25 @@ import numpy as np
 from .utils import *
 
 
+@pytest.mark.parametrize("target", ["torch", "mlx"])
+@pytest.mark.parametrize("stream", AVAILABLE_STREAMS, ids=AVAILABLE_STREAMS_IDS)
+@pytest.mark.parametrize("precision", PRECISIONS, ids=PRECISION_IDS)
+def test_task_1_softmax(stream: mx.Stream, precision: np.dtype, target: str):
+    with mx.stream(stream):
+        BATCH_SIZE = 10
+        DIM = 10
+        for _ in range(100):
+            x = np.random.rand(BATCH_SIZE, DIM).astype(precision)
+            user_output = softmax(mx.array(x), axis=-1)
+            if target == "torch":
+                reference_output = torch.nn.functional.softmax(
+                    torch.tensor(x, device=TORCH_DEVICE), dim=-1
+                )
+            else:
+                reference_output = mx.softmax(mx.array(x), axis=-1)
+            assert_allclose(user_output, reference_output, precision=precision)
+
+
 @pytest.mark.parametrize("stream", AVAILABLE_STREAMS, ids=AVAILABLE_STREAMS_IDS)
 @pytest.mark.parametrize("precision", PRECISIONS, ids=PRECISION_IDS)
 @pytest.mark.parametrize(
@@ -85,6 +104,33 @@ def test_task_1_simple_attention_scale_mask(
                 scale=scale,
                 mask=mx.array(mask),
             )
+            assert_allclose(user_output, reference_output, precision=precision)
+
+
+@pytest.mark.parametrize("target", ["torch", "mlx"])
+@pytest.mark.parametrize("stream", AVAILABLE_STREAMS, ids=AVAILABLE_STREAMS_IDS)
+@pytest.mark.parametrize("precision", PRECISIONS, ids=PRECISION_IDS)
+def test_task_2_linear(stream: mx.Stream, precision: np.dtype, target: str):
+    with mx.stream(stream):
+        BATCH_SIZE = 10
+        DIM_Y = 10
+        DIM_X = 12
+        for _ in range(100):
+            x = np.random.rand(BATCH_SIZE, DIM_X).astype(precision)
+            w = np.random.rand(DIM_Y, DIM_X).astype(precision)
+            b = np.random.rand(DIM_Y).astype(precision)
+            user_output = linear(mx.array(x), mx.array(w), mx.array(b))
+            if target == "torch":
+                reference_output = torch.nn.functional.linear(
+                    torch.tensor(x, device=TORCH_DEVICE),
+                    torch.tensor(w, device=TORCH_DEVICE),
+                    torch.tensor(b, device=TORCH_DEVICE),
+                )
+            else:
+                if precision == np.float16 and stream == mx.cpu:
+                    # unsupported
+                    break
+                reference_output = mx.addmm(mx.array(b), mx.array(x), mx.array(w).T)
             assert_allclose(user_output, reference_output, precision=precision)
 
 

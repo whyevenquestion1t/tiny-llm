@@ -32,6 +32,9 @@ If `offset` is not provided, the positional encoding will be applied to the enti
 offset slice. If the offset slice is 5..10, then the sequence length provided to the layer would be 5, and the 0th token
 will be applied with the 5th frequency.
 
+You *only* need to consider `offset` being `None` or a single slice. The `list[slice]` case will be implemented when we
+start implementing the continuous batching feature. Assume all batches provided use the same offset.
+
 ```
 x: (N, L, H, D)
 cos/sin_freqs: (MAX_SEQ_LEN, D // 2)
@@ -62,7 +65,7 @@ You can do this by reshaping `x` to (N, L, H, D // 2, 2) and then applying the a
 You can test your implementation by running the following command:
 
 ```
-pdm run test -k week_1_day_2_task_1 -v
+pdm run test --week 1 --day 2 -- -k task_1
 ```
 
 ## Task 2: Implement `RoPE` in the non-traditional form
@@ -81,14 +84,21 @@ output[HALF_DIM + 1] = x1[1] * -sin_freqs[1] + x2[1] * cos_freqs[1]
 You can do this by directly getting the first half / second half of the embedding dimension of `x` and applying the
 frequencies to each half separately.
 
-You can test your implementation by running the following command:
-
-```
-pdm run test -k week_1_day_2_task_2 -v
-```
-
 **📚 Readings**
 
 - [vLLM implementation of RoPE](https://github.com/vllm-project/vllm/blob/main/vllm/model_executor/layers/rotary_embedding.py)
+
+
+You can test your implementation by running the following command:
+
+```
+pdm run test --week 1 --day 2 -- -k task_2
+```
+
+At the end of the day, you should be able to pass all tests of this day:
+
+```
+pdm run test --week 1 --day 2
+```
 
 {{#include copyright.md}}

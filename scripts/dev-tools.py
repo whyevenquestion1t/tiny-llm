@@ -19,6 +19,9 @@ def test(args):
         pytest.main(
             ["-v", f"tests/test_week_{args.week}_day_{args.day}.py"] + args.remainders
         )
+    elif args.week or args.day:
+        print("Please provide both week and day")
+        exit(1)
     else:
         pytest.main(["-v", "tests"] + args.remainders)
 
@@ -29,6 +32,9 @@ def test_refsol(args):
             ["-v", f"tests_refsol/test_week_{args.week}_day_{args.day}.py"]
             + args.remainders
         )
+    elif args.week or args.day:
+        print("Please provide both week and day")
+        exit(1)
     else:
         pytest.main(["-v", "tests_refsol"] + args.remainders)
 

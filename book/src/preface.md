@@ -43,6 +43,13 @@ We will also unify the language of the Internet materials so that it is easier t
 For example, we will have a unified dimension symbols for the tensors. You do not need to figure out what `H`, `L`, `E`
 stands for and what dimension of the matrixes are passed into the function.
 
+## About the Authors
+
+This course is created by [Chi](https://github.com/skyzh) and [Connor](https://github.com/Connor1996).
+
+Chi is a systems software engineer at [Neon](https://neon.tech), acquired by Databricks, focusing on storage systems.
+Fascinated by the vibe of large language models (LLMs), he created this course to explore how LLM inference works.
+
 ## Community
 
 You may join skyzh's Discord server and study with the tiny-llm community.

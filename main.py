@@ -41,11 +41,7 @@ elif args.solution == "mlx":
 else:
     raise ValueError(f"Solution {args.solution} not supported")
 
-mlx_model, tokenizer = load(
-    args.model,
-    tokenizer_config={"eos_token": "<|im_end|>"},
-    model_config={"tie_word_embeddings": False, "rope_traditional": False},
-)
+mlx_model, tokenizer = load(args.model)
 
 with mx.stream(mx.gpu if args.device == "gpu" else mx.cpu):
     if use_mlx:

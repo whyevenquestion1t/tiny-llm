@@ -82,7 +82,7 @@ def _step(model, y, offsets, kv_cache):
 
 class PrefillRequest:
     def __init__(
-        self, model: any, tokenizer: TokenizerWrapper, prompt: str, max_step: int = 16
+        self, model: any, tokenizer: TokenizerWrapper, prompt: str, max_step: int = 128
     ):
         self.prompt = prompt
         self.kv_cache = [TinyKvFullCache() for _ in range(model.num_hidden_layers)]
@@ -113,17 +113,41 @@ class PrefillRequest:
             return None
 
 
-def batch_generate(
-    model: any, tokenizer: TokenizerWrapper, prompts: list[str], max_seq_len=512
+def print_progress(
+    detokenizers: list[TokenizerWrapper],
+    prompt_idx: list[int],
+    is_idle: list[bool],
+    pending_prefill_requests: PrefillRequest | None,
 ):
-    MAX_REQUESTS = 5
-    is_idle = [True] * MAX_REQUESTS
-    prompt_idx = [0] * MAX_REQUESTS
-    next_tokens = mx.array([0] * MAX_REQUESTS)
-    offsets = mx.array([0] * MAX_REQUESTS)
-    detokenizers = [None] * MAX_REQUESTS
+    for i in range(len(detokenizers)):
+        if is_idle[i]:
+            print(f"Decode {i}: idle", flush=True)
+        else:
+            print(f"Decode {i}[{prompt_idx[i]}]: {detokenizers[i].text}", flush=True)
+    if pending_prefill_requests is not None:
+        print(
+            f"Prefill {pending_prefill_requests.offset}/{pending_prefill_requests.prefill_tokens.size}",
+            flush=True,
+        )
+    else:
+        print("Prefill: idle", flush=True)
+
+
+def batch_generate(
+    model: any,
+    tokenizer: TokenizerWrapper,
+    prompts: list[str],
+    max_seq_len=512,
+    batch_size=5,
+    prefill_step=128,
+):
+    is_idle = [True] * batch_size
+    prompt_idx = [0] * batch_size
+    next_tokens = mx.array([0] * batch_size)
+    offsets = mx.array([0] * batch_size)
+    detokenizers = [None] * batch_size
     kv_cache = [
-        BatchingKvCache(max_active_requests=MAX_REQUESTS, max_seq_len=max_seq_len)
+        BatchingKvCache(max_active_requests=batch_size, max_seq_len=max_seq_len)
         for _ in range(model.num_hidden_layers)
     ]
     result = []
@@ -142,33 +166,27 @@ def batch_generate(
             except StopIteration:
                 more_prompts = False
                 break
-            print(f"Starting prefill for prompt {idx}", flush=True)
-            pending_prefill_requests = PrefillRequest(model, tokenizer, prompt)
+            pending_prefill_requests = PrefillRequest(
+                model, tokenizer, prompt, prefill_step
+            )
             break
 
         if pending_prefill_requests is not None:
             res = pending_prefill_requests.prefill()
             if res is not None:
-                print("Prefill done", flush=True)
                 pending_prefill_requests = None
                 token, prefill_kv_cache, offset = res
 
                 if token.item() == tokenizer.eos_token_id:
                     # if the first token is eos, we skip this prompt
-                    print("Request finished without producing any token", flush=True)
                     continue
 
-                for i in range(MAX_REQUESTS):
+                for i in range(batch_size):
                     if is_idle[i]:
                         detokenizers[i] = tokenizer.detokenizer.__class__(
                             tokenizer._tokenizer
                         )
                         detokenizers[i].add_token(token.item())
-                        print(f"Decoding prompt {idx} at request {i}", flush=True)
-                        print(
-                            f"(Prefill) {idx}: " + detokenizers[i].last_segment,
-                            flush=True,
-                        )
                         prompt_idx[i] = idx
                         is_idle[i] = False
                         for prefill_cache, batch_cache in zip(
@@ -178,18 +196,13 @@ def batch_generate(
                         next_tokens[i] = token
                         offsets[i] = offset
                         break
-            else:
-                print(
-                    f"Still prefilling the request: {pending_prefill_requests.offset}/{pending_prefill_requests.prefill_tokens.size}",
-                    flush=True,
-                )
 
         if not all(is_idle):
             next_tokens = mx.array(next_tokens)
             # decode
             next_tokens = _step(model, next_tokens.reshape(-1, 1), offsets, kv_cache)
             offsets += 1
-            for i in range(MAX_REQUESTS):
+            for i in range(batch_size):
                 if not is_idle[i]:
                     detokenizers[i].add_token(next_tokens[i].item())
                     if (
@@ -210,6 +223,5 @@ def batch_generate(
                             f"(In Progress) {prompt_idx[i]}: " + detokenizers[i].text,
                             flush=True,
                         )
-        else:
-            print("No requests in progress", flush=True)
+        print_progress(detokenizers, prompt_idx, is_idle, pending_prefill_requests)
     return result

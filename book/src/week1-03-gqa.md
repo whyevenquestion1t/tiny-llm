@@ -17,7 +17,13 @@ In day 3, we will implement Grouped Query Attention (GQA). The Qwen2 models use 
 *   [PyTorch API (the case where enable_gqa=True)](https://pytorch.org/docs/stable/generated/torch.nn.functional.scaled_dot_product_attention.html)
 *   [torchtune.modules.MultiHeadAttention](https://pytorch.org/torchtune/0.3/generated/torchtune.modules.MultiHeadAttention.html)
 
-## Task: Implement `scaled_dot_product_attention_grouped`
+## Task 1: Implement `scaled_dot_product_attention_grouped`
+
+You will need to modify the following file:
+
+```
+src/tiny_llm/attention.py
+```
 
 In this task, we will implement the grouped scaled dot product attention function, which forms the core of GQA.
 
@@ -49,10 +55,47 @@ mask: N.. x H_q x L x S
 output: N.. x H_q x L x D
 ```
 
+Please note that besides the grouped heads, we also extend the implementation that Q, K, and V might not have the same
+sequence length.
+
 You can test your implementation by running the following command:
 
 ```bash
-pdm run test -k week_1_day_3_task_1 -v
+pdm run test --week 1 --day 3 -- -k task_1
+```
+
+## Task 2: Causal Masking
+
+**Readings**
+
+- [Writing an LLM from scratch, part 9 -- causal attention](https://www.gilesthomas.com/2025/03/llm-from-scratch-9-causal-attention)
+
+In this task, we will implement the causal masking for the grouped attention.
+
+The causal masking is a technique that prevents the attention mechanism from attending to future tokens in the sequence.
+When `mask` is set to `causal`, we will apply the causal mask.
+
+The causal mask is a square matrix of shape `(L, S)`, where `L` is the query sequence length and `S` is the key/value sequence length.
+The mask is a lower triangular matrix, where the elements on the diagonal and below the diagonal are 0, and the elements above the diagonal are -inf. For example, if `L = 3` and `S = 5`, the mask will be:
+
+```
+0   0   0   -inf -inf
+0   0   0   0    -inf
+0   0   0   0    0
+```
+
+Please implement the `causal_mask` function in `src/tiny_llm/attention.py` and then use it in the `scaled_dot_product_attention_grouped` function. Also note that our casual mask diagonal position is different from the PyTorch API.
+
+You can test your implementation by running the following command:
+
+```bash
+pdm run test --week 1 --day 3 -- -k task_2
+```
+
+At the end of the day, you should be able to pass all tests of this day:
+
+```bash
+pdm run test --week 1 --day 3
 ```
 
 {{#include copyright.md}}

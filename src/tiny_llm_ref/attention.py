@@ -21,6 +21,12 @@ def scaled_dot_product_attention_simple(
     return mx.matmul(softmax(scores, axis=-1), value)
 
 
+def causal_mask(L: int, S: int, dtype: mx.Dtype) -> mx.array:
+    mask = mx.tril(mx.ones((L, S)), k=(S - L))
+    mask = mx.where(mask, mx.array(0), mx.array(-mx.inf)).astype(dtype)
+    return mask
+
+
 def scaled_dot_product_attention_grouped(
     query: mx.array,
     key: mx.array,
@@ -44,8 +50,7 @@ def scaled_dot_product_attention_grouped(
     scores = mx.matmul(query, key.swapaxes(-2, -1)) * factor
     if mask is not None:
         if mask == "causal":
-            mask = mx.tril(mx.ones((L, S)), k=S - L)
-            mask = mx.where(mask, mx.array(0), mx.array(-mx.inf)).astype(scores.dtype)
+            mask = causal_mask(L, S, scores.dtype)
             scores = scores + mask
         else:
             mask = mask.reshape(-1, H, n_repeats, mask.shape[-2], mask.shape[-1])

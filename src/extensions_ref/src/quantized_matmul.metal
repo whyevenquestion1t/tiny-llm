@@ -9,7 +9,8 @@
     device const int &K [[buffer(7)]],
     uint3 group_id [[threadgroup_position_in_grid]],
     uint3 thread_id [[thread_position_in_threadgroup]],
-    uint3 threads_per_threadgroup [[threads_per_threadgroup]]) {
+    uint3 threads_per_threadgroup [[threads_per_threadgroup]],
+    threadgroup char * shmem [[threadgroup(0)]]) {
     const int group_size = 64;
     const int bits = 4;
     const int packs_per_item = 32 / bits;

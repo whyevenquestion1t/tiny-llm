@@ -84,7 +84,7 @@ The mask is a lower triangular matrix, where the elements on the diagonal and be
 0   0   0   0    0
 ```
 
-Please implement the `causal_mask` function in `src/tiny_llm/attention.py` and then use it in the `scaled_dot_product_attention_grouped` function. Also note that our casual mask diagonal position is different from the PyTorch API.
+Please implement the `causal_mask` function in `src/tiny_llm/attention.py` and then use it in the `scaled_dot_product_attention_grouped` function. Also note that our causal mask diagonal position is different from the PyTorch API.
 
 You can test your implementation by running the following command:
 

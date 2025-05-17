@@ -47,7 +47,7 @@ for more details.
 
 You can try the Qwen2 model with MLX/vLLM. You can read the blog post below to have some idea of what we will build
 within this course. At the end of this week, we will be able to chat with the model -- that is to say, use Qwen2 to
-generate text, as a casual language model.
+generate text, as a causal language model.
 
 The reference implementation of the Qwen2 model can be found in huggingface transformers, vLLM, and mlx-lm. You may
 utilize these resources to better understand the internals of the model and what we will implement in this week.

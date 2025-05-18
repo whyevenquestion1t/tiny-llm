@@ -35,6 +35,7 @@ bench.cmd = "pytest benches"
 format = "ruff format"
 format-cpp.shell = "find src/extensions_ref -type file \\( -name '*.h' -or -name '*.cpp' \\) | xargs -n1 clang-format -i"
 copy-test.cmd = "python scripts/dev-tools.py copy-test"
+book.cmd = "mdbook serve book/"
 
 [tool.pytest.ini_options]
 addopts = [

@@ -10,9 +10,10 @@
     - [Positional Encodings and RoPE](./week1-02-positional-encodings.md)
     - [Grouped/Multi Query Attention](./week1-03-gqa.md)
     - [RMSNorm and MLP](./week1-04-rmsnorm-and-mlp.md)
-    - [Wiring the Qwen2 Model]()
-    - [Loading the Model]()
+    - [The Qwen2 Model]()
     - [Generating the Response]()
+    - [Loading the Model]()
+    - [Sampling and Preparing for Week 2]()
     <!--
     - [Attention and Multi-Head Attention](./week1-01-attention.md)
     - [Positional Embeddings and RoPE](./week1-02-positional-embeddings.md)

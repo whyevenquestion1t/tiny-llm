@@ -12,7 +12,6 @@
     - [RMSNorm and MLP](./week1-04-rmsnorm-and-mlp.md)
     - [The Qwen2 Model]()
     - [Generating the Response]()
-    - [Loading the Model]()
     - [Sampling and Preparing for Week 2]()
     <!--
     - [Attention and Multi-Head Attention](./week1-01-attention.md)

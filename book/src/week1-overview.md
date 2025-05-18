@@ -10,9 +10,8 @@ In this week, we will start from the basic matrix operations and see how those t
 Qwen2 model parameters into a model that generates text. We will implement the neural network layers used in the Qwen2
 model using mlx's matrix APIs.
 
-We will use the Qwen2-7B-Instruct model for this week. As we need to dequantize the model parameters, the 4GB model needs
-20GB of memory in week 1. If you do not have enough memory, you can consider using the smaller 0.5B model (we do not have
-infra to test it so you need to figure out things on your own unfortunately).
+We will use the Qwen2-7B-Instruct model for this week. As we need to dequantize the model parameters, the model of 4GB
+download size needs 20GB of memory in week 1. If you do not have enough memory, you can consider using the smaller 0.5B model.
 
 The MLX version of the Qwen2-7B-Instruct model we downloaded in the setup is an int4 quantized version of the original bfloat16 model.
 

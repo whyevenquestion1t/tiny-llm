@@ -92,6 +92,35 @@ You can test your implementation by running the following command:
 pdm run test --week 1 --day 3 -- -k task_2
 ```
 
+## Task 3: Qwen2 Grouped Query Attention
+
+In this task, we will implement the Qwen2 Grouped Query Attention. You will need to modify the following file:
+
+```
+src/tiny_llm/qwen2_week1.py
+```
+
+`Qwen2MultiHeadAttention` implements the multi-head attention for Qwen2. You will need to implement the following pseudo code:
+
+```
+x: B, L, E
+q = linear(x, wq, bq) -> B, L, H_q, D
+k = linear(x, wk, bk) -> B, L, H, D
+v = linear(x, wv, bv) -> B, L, H, D
+q = rope(q, offset=slice(offset, offset + L))
+k = rope(k, offset=slice(offset, offset + L))
+(transpose as needed)
+x = scaled_dot_product_attention_grouped(q, k, v, scale, mask) -> B, L, H_q, D ; Do this at float32 precision
+(transpose as needed)
+x = linear(x, wo) -> B, L, E
+```
+
+You can test your implementation by running the following command:
+
+```bash
+pdm run test --week 1 --day 3 -- -k task_3
+```
+
 At the end of the day, you should be able to pass all tests of this day:
 
 ```bash

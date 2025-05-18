@@ -133,3 +133,7 @@ def test_task_2_grouped_attention_causal_mask(
     stream: mx.Stream, precision: np.dtype, batch_dimension: int, scale: float | None
 ):
     grouped_attention_helper(stream, precision, batch_dimension, scale, True)
+
+
+def test_task_3_qwen2_grouped_query_attention():
+    pass

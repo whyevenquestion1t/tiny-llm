@@ -1,6 +1,7 @@
 import numpy as np
 import mlx.core as mx
 import torch
+import huggingface_hub
 
 AVAILABLE_STREAMS = [mx.cpu, mx.gpu]
 AVAILABLE_STREAMS_IDS = ["cpu", "gpu"]
@@ -47,3 +48,36 @@ def np_type_to_mx_type(np_type: np.dtype) -> mx.Dtype:
         return mx.float16
     else:
         raise ValueError(f"Unsupported numpy type: {np_type}")
+
+
+def qwen_2_05b_model_exists() -> bool:
+    try:
+        huggingface_hub.snapshot_download(
+            "Qwen/Qwen2-0.5B-Instruct-MLX", local_files_only=True
+        )
+        return True
+    except Exception as e:
+        print(f"Cannot find the Qwen2-0.5B-Instruct-MLX model: {e}")
+        return False
+
+
+def qwen_2_15b_model_exists() -> bool:
+    try:
+        huggingface_hub.snapshot_download(
+            "Qwen/Qwen2-1.5B-Instruct-MLX", local_files_only=True
+        )
+        return True
+    except Exception as e:
+        print(f"Cannot find the Qwen2-1.5B-Instruct-MLX model: {e}")
+        return False
+
+
+def qwen_2_7b_model_exists() -> bool:
+    try:
+        huggingface_hub.snapshot_download(
+            "Qwen/Qwen2-7B-Instruct-MLX", local_files_only=True
+        )
+        return True
+    except Exception as e:
+        print(f"Cannot find the Qwen2-7B-Instruct-MLX model: {e}")
+        return False

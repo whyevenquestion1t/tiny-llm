@@ -95,4 +95,11 @@ pdm run build-ext-test
 
 It should print `correct: True`.
 
+If you are not familiar with C++ or Metal programming, we also suggest doing some small exercises to get familiar with
+them. You can implement some element-wise operations like `exp`, `sin`, `cos` and replace the MLX ones in your model
+implementation.
+
+That's all for week 1! We have implemented all the components to serve the Qwen2 model. Now we are ready to start week 2,
+where we will optimize the serving infrastructure and make it run blazing fast on your Apple Silicon device.
+
 {{#include copyright.md}}

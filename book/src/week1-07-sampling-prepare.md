@@ -1,13 +1,5 @@
 # Sampling and Preparing for Week 2
 
-
-<div class="warning">
-
-This book is not complete and this chapter is not finalized yet. We are still working on the reference solution, writing
-tests, and unify the math notations in the book.
-
-</div>
-
 In day 7, we will implement various sampling strategies. And we will get you prepared for week 2.
 
 ## Task 1: Sampling

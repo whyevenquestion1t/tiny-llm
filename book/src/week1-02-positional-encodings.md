@@ -1,12 +1,5 @@
 # Week 1 Day 2: Positional Encodings and RoPE
 
-<div class="warning">
-
-This book is not complete and this chapter is not finalized yet. We are still working on the reference solution, writing
-tests, and unify the math notations in the book.
-
-</div>
-
 In day 2, we will implement the positional embedding used in the Qwen2 model: Rotary Postional Encoding. In a transformer
 model, we need a way to embed the information of the position of a token into the input of the attention layers. In Qwen2,
 positional embedding is applied within the multi head attention layer on the query and key vectors.

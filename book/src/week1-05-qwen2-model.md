@@ -1,13 +1,5 @@
 # The Qwen2 Model
 
-
-<div class="warning">
-
-This book is not complete and this chapter is not finalized yet. We are still working on the reference solution, writing
-tests, and unify the math notations in the book.
-
-</div>
-
 In day 5, we will implement the Qwen2 model.
 
 Before we start, please make sure you have downloaded the models:

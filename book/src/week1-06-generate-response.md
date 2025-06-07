@@ -1,12 +1,5 @@
 # Generating the Response: Prefill and Decode
 
-<div class="warning">
-
-This book is not complete and this chapter is not finalized yet. We are still working on the reference solution, writing
-tests, and unify the math notations in the book.
-
-</div>
-
 In day 6, we will implement the process of generating the response when using the LLM as a chatbot. The implementation
 is not a lot of code, but given that it uses a large portion of the code we implemented in the previous days, we want
 to allocate this day to debug the implementation and make sure everything is working as expected.

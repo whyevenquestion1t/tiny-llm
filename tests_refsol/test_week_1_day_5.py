@@ -1,7 +1,9 @@
 import pytest
 from .utils import *
-from .tiny_llm_base import Qwen2ModelWeek1, Embedding, dequantize_linear
+from .tiny_llm_base import Qwen2ModelWeek1, Embedding, dequantize_linear, qwen2_week1
 from mlx_lm import load
+
+# TODO: task 1 tests
 
 
 @pytest.mark.skipif(

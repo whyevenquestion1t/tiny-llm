@@ -32,7 +32,7 @@ You may join skyzh's Discord server and study with the tiny-llm community.
 | 1.4            | RMSNorm and MLP                                             | ✅    | ✅   | ✅  |
 | 1.5            | Load the Model                                              | ✅    | ✅   | ✅  |
 | 1.6            | Generate Responses (aka Decoding)                           | ✅    | ✅   | ✅  |
-| 1.7            | Sampling                                                    | ✅    | 🚧   | 🚧  |
+| 1.7            | Sampling                                                    | ✅    | ✅   | ✅  |
 | 2.1            | Key-Value Cache                                             | ✅    | 🚧   | 🚧  |
 | 2.2            | Quantized Matmul and Linear - CPU                           | ✅    | 🚧   | 🚧  |
 | 2.3            | Quantized Matmul and Linear - GPU                           | ✅    | 🚧   | 🚧  |

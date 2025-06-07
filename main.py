@@ -16,8 +16,8 @@ parser.add_argument("--solution", type=str, default="tiny_llm")
 parser.add_argument("--loader", type=str, default="week1")
 parser.add_argument("--device", type=str, default="gpu")
 parser.add_argument("--sampler-temp", type=float, default=0)
-parser.add_argument("--sampler-top-p", type=float, default=0)
-parser.add_argument("--sampler-top-k", type=int, default=0)
+parser.add_argument("--sampler-top-p", type=float, default=None)
+parser.add_argument("--sampler-top-k", type=int, default=None)
 args = parser.parse_args()
 
 use_mlx = False

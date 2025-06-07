@@ -1,4 +1,4 @@
-# Sampling and Preparing for Week 2
+# Week 1 Day 7: Sampling and Preparing for Week 2
 
 In day 7, we will implement various sampling strategies. And we will get you prepared for week 2.
 

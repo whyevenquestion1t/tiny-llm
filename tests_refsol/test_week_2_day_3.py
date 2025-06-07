@@ -14,7 +14,7 @@ def attention_helper(stream: mx.Stream, H_q, H, L, E, S, BATCH):
             query = mx.random.uniform(shape=q_shape, dtype=precision)
             key = mx.random.uniform(shape=kv_shape, dtype=precision)
             value = mx.random.uniform(shape=kv_shape, dtype=precision)
-            
+
             reference_output = mx.fast.scaled_dot_product_attention(
                 q=query,
                 k=key,
@@ -29,6 +29,7 @@ def attention_helper(stream: mx.Stream, H_q, H, L, E, S, BATCH):
             )
             mx.eval(user_output)  # so that any error will be caught here
             assert_allclose(user_output, reference_output, precision=precision)
+
 
 def test_flash_attention_cpu_small():
     attention_helper(mx.cpu, 6, 3, 2, 5, 3, 1)

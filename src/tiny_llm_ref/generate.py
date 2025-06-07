@@ -11,10 +11,12 @@ def simple_generate(
     def _step(model, y, offset):
         logits = model(y[None], offset)
         logits = logits[:, -1, :]
-        logprobs = logits - mx.logsumexp(logits, keepdims=True)
+        logprobs = logits - mx.logsumexp(
+            logits, keepdims=True
+        )  # optional -- for numerical stability
         sampler = lambda x: mx.argmax(x, axis=-1)
         y = sampler(logprobs)
-        return y, logprobs.squeeze(0)
+        return y
 
     # prefill with the prompt
     tokens = mx.array(tokenizer.encode(prompt, add_special_tokens=False))
@@ -22,7 +24,7 @@ def simple_generate(
     detokenizer.reset()
     # generate/decode
     while True:
-        token, _ = _step(model, tokens, tokens.size)
+        token = _step(model, tokens, tokens.size)
         mx.eval(token)
         tokens = mx.concat([tokens, token])
         if token.item() == tokenizer.eos_token_id:

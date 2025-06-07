@@ -40,14 +40,18 @@ def test_task_1_simple_attention(
         DIM_L = 4
         DIM_D = 5
         for _ in range(100):
-            query = mx.random.uniform(shape=(*BATCH_SIZE, DIM_L, DIM_D), dtype=precision)
+            query = mx.random.uniform(
+                shape=(*BATCH_SIZE, DIM_L, DIM_D), dtype=precision
+            )
             key = mx.random.uniform(shape=(*BATCH_SIZE, DIM_L, DIM_D), dtype=precision)
-            value = mx.random.uniform(shape=(*BATCH_SIZE, DIM_L, DIM_D), dtype=precision)
+            value = mx.random.uniform(
+                shape=(*BATCH_SIZE, DIM_L, DIM_D), dtype=precision
+            )
             reference_output = mx.fast.scaled_dot_product_attention(
                 q=query.reshape(1, -1, DIM_L, DIM_D),
                 k=key.reshape(1, -1, DIM_L, DIM_D),
                 v=value.reshape(1, -1, DIM_L, DIM_D),
-                scale=1.0 / (DIM_D ** 0.5),
+                scale=1.0 / (DIM_D**0.5),
             ).reshape(*BATCH_SIZE, DIM_L, DIM_D)
             user_output = scaled_dot_product_attention_simple(
                 query,
@@ -78,9 +82,13 @@ def test_task_1_simple_attention_scale_mask(
         DIM_L = 4
         DIM_D = 5
         for _ in range(100):
-            query = mx.random.uniform(shape=(*BATCH_SIZE, DIM_L, DIM_D), dtype=precision)
+            query = mx.random.uniform(
+                shape=(*BATCH_SIZE, DIM_L, DIM_D), dtype=precision
+            )
             key = mx.random.uniform(shape=(*BATCH_SIZE, DIM_L, DIM_D), dtype=precision)
-            value = mx.random.uniform(shape=(*BATCH_SIZE, DIM_L, DIM_D), dtype=precision)
+            value = mx.random.uniform(
+                shape=(*BATCH_SIZE, DIM_L, DIM_D), dtype=precision
+            )
             mask = mx.random.uniform(shape=(*BATCH_SIZE, DIM_L, DIM_L), dtype=precision)
             scale = 0.5
             reference_output = mx.fast.scaled_dot_product_attention(
@@ -139,18 +147,18 @@ def test_task_2_simple_multi_head_attention(stream: mx.Stream, precision: mx.Dty
             v_proj_weight = mx.random.uniform(shape=(H * D, H * D), dtype=precision)
             out_proj_weight = mx.random.uniform(shape=(H * D, H * D), dtype=precision)
             mask = mx.random.uniform(shape=(L, L), dtype=precision)
-            
+
             # Use MLX built-in MultiHeadAttention as reference
             reference_mha = nn.MultiHeadAttention(H * D, H)
-            
+
             # Set the weights manually to match our test case
             reference_mha.query_proj.weight = q_proj_weight
             reference_mha.key_proj.weight = k_proj_weight
             reference_mha.value_proj.weight = v_proj_weight
             reference_mha.out_proj.weight = out_proj_weight
-            
+
             reference_output = reference_mha(query, key, value, mask=mask)
-            
+
             user_output = SimpleMultiHeadAttention(
                 H * D,
                 H,

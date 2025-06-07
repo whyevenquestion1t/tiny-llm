@@ -41,7 +41,7 @@ def grouped_attention_helper(
                 q=query.reshape(-1, H_q, L, D),
                 k=key.reshape(-1, H, S, D),
                 v=value.reshape(-1, H, S, D),
-                scale=scale if scale is not None else (1.0 / (D ** 0.5)),
+                scale=scale if scale is not None else (1.0 / (D**0.5)),
                 mask=mask.reshape(-1, H_q, L, S) if not is_causal_mask else "causal",
             )
             # Reshape reference output back to original shape
@@ -53,7 +53,7 @@ def grouped_attention_helper(
                 scale=scale,
                 mask=mask if not is_causal_mask else "causal",
             )
-           
+
             assert_allclose(user_output, reference_output, precision=precision)
 
 

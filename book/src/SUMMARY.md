@@ -11,7 +11,7 @@
     - [Grouped/Multi Query Attention](./week1-03-gqa.md)
     - [RMSNorm and MLP](./week1-04-rmsnorm-and-mlp.md)
     - [The Qwen2 Model](./week1-05-qwen2-model.md)
-    - [Generating the Response]()
+    - [Generating the Response](./week1-06-generate-response.md)
     - [Sampling and Preparing for Week 2]()
     <!--
     - [Attention and Multi-Head Attention](./week1-01-attention.md)

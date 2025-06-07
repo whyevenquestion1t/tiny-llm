@@ -37,12 +37,13 @@ logits = output_logits[:, -1, :]
 ```
 
 Then, you can optionally apply the log-sum-exp trick to normalize the logits to avoid numerical instability. As we only
-do argmax sampling, the log-sum-exp trick is not necessary.
+do argmax sampling, the log-sum-exp trick is not necessary. Then, you need to sample the next token from the logits.
+You can use the `mx.argmax` function to sample the token with the highest probability over the last dimension
+(the vocab_size axis). The function returns the next token number. This decoding strategy is called greedy decoding as we always
+pick the token with the highest probability.
 
 - 📚 [The Log-Sum-Exp Trick](https://gregorygundersen.com/blog/2020/02/09/log-sum-exp/)
-
-Then, you need to sample the next token from the logits. You can use the `mx.argmax` function to sample the token with
-the highest probability over the last dimension (the vocab_size axis). The function returns the next token number.
+- 📚 [Decoding Strategies in Large Language Models](https://mlabonne.github.io/blog/posts/2023-06-07-Decoding_strategies.html)
 
 With the `_step` function implemented, you can now implement the full `simple_generate` function. The function will
 first prefill the model with the prompt. As the prompt is a string, you need to first convert it to a list of tokens

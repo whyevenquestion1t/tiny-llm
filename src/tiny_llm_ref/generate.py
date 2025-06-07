@@ -3,10 +3,14 @@ from mlx_lm.tokenizer_utils import TokenizerWrapper
 from .kv_cache import *
 from .qwen2_week1 import Qwen2ModelWeek1
 from .qwen2_week2 import Qwen2ModelWeek2
+from typing import Callable
 
 
 def simple_generate(
-    model: Qwen2ModelWeek1, tokenizer: TokenizerWrapper, prompt: str
+    model: Qwen2ModelWeek1,
+    tokenizer: TokenizerWrapper,
+    prompt: str,
+    sampler: Callable[[mx.array], mx.array] | None,
 ) -> str:
     def _step(model, y, offset):
         logits = model(y[None], offset)
@@ -14,8 +18,10 @@ def simple_generate(
         logprobs = logits - mx.logsumexp(
             logits, keepdims=True
         )  # optional -- for numerical stability
-        sampler = lambda x: mx.argmax(x, axis=-1)
-        y = sampler(logprobs)
+        if sampler is None:
+            y = mx.argmax(logprobs, axis=-1)
+        else:
+            y = sampler(logprobs)
         return y
 
     # prefill with the prompt

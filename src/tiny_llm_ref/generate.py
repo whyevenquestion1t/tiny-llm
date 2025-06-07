@@ -88,7 +88,7 @@ def _step(model, y, offsets, kv_cache):
     return y
 
 
-class PrefillRequest:
+class _PrefillRequest:
     def __init__(
         self, model: any, tokenizer: TokenizerWrapper, prompt: str, max_step: int = 128
     ):
@@ -121,11 +121,11 @@ class PrefillRequest:
             return None
 
 
-def print_progress(
+def _print_progress(
     detokenizers: list[TokenizerWrapper],
     prompt_idx: list[int],
     is_idle: list[bool],
-    pending_prefill_requests: PrefillRequest | None,
+    pending_prefill_requests: _PrefillRequest | None,
 ):
     for i in range(len(detokenizers)):
         if is_idle[i]:
@@ -174,7 +174,7 @@ def batch_generate(
             except StopIteration:
                 more_prompts = False
                 break
-            pending_prefill_requests = PrefillRequest(
+            pending_prefill_requests = _PrefillRequest(
                 model, tokenizer, prompt, prefill_step
             )
             break
@@ -231,5 +231,5 @@ def batch_generate(
                             f"(In Progress) {prompt_idx[i]}: " + detokenizers[i].text,
                             flush=True,
                         )
-        print_progress(detokenizers, prompt_idx, is_idle, pending_prefill_requests)
+        _print_progress(detokenizers, prompt_idx, is_idle, pending_prefill_requests)
     return result

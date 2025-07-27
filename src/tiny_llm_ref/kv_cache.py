@@ -57,7 +57,7 @@ class BatchingKvCache(TinyKvCache):
             keys[b, :, seq_len - S : seq_len, :] = cached_keys
             values[b, :, seq_len - S : seq_len, :] = cached_values
             masks[b, :, seq_len - S : seq_len] = causal_mask(q_L, S, dtype=key.dtype)
-        return keys, values, None, masks
+        return keys, values, None, masks.reshape(B, 1, q_L, seq_len)
 
     def add_request(self, prefilled: TinyKvCache, id: int):
         if id >= self.max_active_requests:

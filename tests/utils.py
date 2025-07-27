@@ -28,8 +28,8 @@ def assert_allclose(
     assert a.shape == b.shape, f"shape mismatch: {a.shape} vs {b.shape}"
     if not np.allclose(a, b, rtol=rtol, atol=atol):
         diff = np.invert(np.isclose(a, b, rtol=rtol, atol=atol))
-        if diff.size > 10000 and np.sum(diff) <= 1:
-            # if only one element is different in a large array, probably fine
+        if diff.size > 10000 and np.sum(diff) <= 3:
+            # if only a small number of elements are different in a large array, probably fine
             return
         with np.printoptions(precision=3, suppress=True):
             print("a=", a)

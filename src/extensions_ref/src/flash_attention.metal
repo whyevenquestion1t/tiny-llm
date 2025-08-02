@@ -1,22 +1,27 @@
 #include <metal_stdlib>
+#include "mlx/backend/metal/kernels/utils.h"
+
 using namespace metal;
 
 [[kernel]] void flash_attention_f32_e128(
     device const float* q [[buffer(0)]],
     device const float* k [[buffer(1)]],
     device const float* v [[buffer(2)]],
-    device float* out [[buffer(3)]],
-    [[maybe_unused]] device const int64_t &N [[buffer(4)]],
-    device const int64_t &S [[buffer(5)]],
-    device const int64_t &L [[buffer(6)]],
-    device const int64_t &E [[buffer(7)]],
-    device const int64_t &num_kv_heads [[buffer(8)]],
-    device const int64_t &num_heads [[buffer(9)]],
-    device const float &scale [[buffer(10)]],
-    device const int64_t &Br [[buffer(11)]],
-    device const int64_t &Bc [[buffer(12)]],
-    [[maybe_unused]] device const int64_t &Tr [[buffer(13)]],
-    device const int64_t &Tc [[buffer(14)]],
+    device const float* mask [[buffer(3)]],
+    constant const int* mask_shape [[buffer(4)]],
+    constant const int64_t* mask_strides [[buffer(5)]],
+    device float* out [[buffer(6)]],
+    [[maybe_unused]] device const int64_t &N [[buffer(7)]],
+    device const int64_t &L [[buffer(8)]],
+    device const int64_t &S [[buffer(9)]],
+    device const int64_t &E [[buffer(10)]],
+    device const int64_t &num_kv_heads [[buffer(11)]],
+    device const int64_t &num_heads [[buffer(12)]],
+    device const float &scale [[buffer(13)]],
+    device const int64_t &Br [[buffer(14)]],
+    device const int64_t &Bc [[buffer(15)]],
+    [[maybe_unused]] device const int64_t &Tr [[buffer(16)]],
+    device const int64_t &Tc [[buffer(17)]],
     uint2 group_id [[threadgroup_position_in_grid]],
     uint simd_gid [[simdgroup_index_in_threadgroup]],
     uint simd_lid [[thread_index_in_simdgroup]]) {
@@ -31,12 +36,12 @@ using namespace metal;
     // 128*32*sizeof(float) bytes * number of arrays and use them as the threadgroup
     // shared memory.
 
-    bool is_i_in_range = i * Br + a < S && a < Br;
+    bool is_i_in_range = i * Br + a < L && a < Br;
 
     const int q_kv_ratio = num_heads / num_kv_heads;
-    device const float *q_ptr = q + n * S * E + i * Br * E;
-    device const float *k_ptr_base = k + (n / q_kv_ratio) * L * E;
-    device const float *v_ptr_base = v + (n / q_kv_ratio) * L * E;
+    device const float *q_ptr = q + n * L * E + i * Br * E;
+    device const float *k_ptr_base = k + (n / q_kv_ratio) * S * E;
+    device const float *v_ptr_base = v + (n / q_kv_ratio) * S * E;
     threadgroup float o_i[32][128]; // Br x E, each simd group shares an o_i, only lane 0 writes to it
 
     if (simd_lid == 0) {
@@ -45,9 +50,9 @@ using namespace metal;
         }
     }
 
-    // q_ptr: S * E
-    // k_ptr: L * E
-    // v_ptr: L * E
+    // q_ptr: L * E
+    // k_ptr: S * E
+    // v_ptr: S * E
     // To access q[a, c]: use a * E + c
     // To access k/v[b, c]: use b * E + c
 
@@ -55,7 +60,7 @@ using namespace metal;
     float l_i = 0.0; // per thread; sync to threadgroup memory later
 
     for (int j = 0; j < Tc; j++) {
-        bool is_j_in_range = j * Bc + b < L && b < Bc;
+        bool is_j_in_range = j * Bc + b < S && b < Bc;
 
         device const float *k_ptr = k_ptr_base + j * Bc * E;
         device const float *v_ptr = v_ptr_base + j * Bc * E;
@@ -67,6 +72,16 @@ using namespace metal;
                 s_a_b += q_ptr[a * E + c] * k_ptr[b * E + c];
             }
         }
+
+        s_a_b *= scale;
+        if (is_i_in_range && is_j_in_range) {
+            int64_t m_idx_1 = n;
+            int64_t m_idx_2 = i * Br + a;
+            int64_t m_idx_3 = j * Bc + b;
+            int64_t m_idx_converted = elem_to_loc(m_idx_1 * L * S + m_idx_2 * S + m_idx_3, mask_shape, mask_strides, 3);
+            s_a_b += mask[m_idx_converted];
+        }
+
         // for each cell, get the rowmax of the corresponding row, and compute m_i in each
         // of the cells
         float rowmax = simd_max(s_a_b);
@@ -112,7 +127,7 @@ using namespace metal;
         }
         for (int c = 0; c < E; c++) {
             if (is_i_in_range) {
-                out[n * S * E + (i * Br + a) * E + c] = o_i[a][c];
+                out[n * L * E + (i * Br + a) * E + c] = o_i[a][c];
             }
         }
     }

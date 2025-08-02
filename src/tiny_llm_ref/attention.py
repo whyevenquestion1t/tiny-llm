@@ -11,8 +11,8 @@ def scaled_dot_product_attention_simple(
     mask: mx.array | None = None,
 ) -> mx.array:
     """
-    A simple implementation of scaled dot product attention. Assuming Q,K,V are of the same shape.
-    Assuming mask is always a float array.
+    A simple implementation of scaled dot product attention. Assuming Q, K, V are of the same shape.
+    Assuming mask is always a float array that you can add to the scores.
     """
     factor = mx.rsqrt(query.shape[-1]) if scale is None else scale
     scores = mx.matmul(query, key.swapaxes(-2, -1)) * factor
@@ -26,14 +26,18 @@ def causal_mask(L: int, S: int, dtype: mx.Dtype) -> mx.array:
     mask = mx.where(mask, mx.array(0), mx.array(-mx.inf)).astype(dtype)
     return mask
 
-
 def scaled_dot_product_attention_grouped(
     query: mx.array,
     key: mx.array,
     value: mx.array,
     scale: float | None = None,
-    mask: mx.array | str | None = None,
+    mask: mx.array | None = None,
 ) -> mx.array:
+    """
+    Potential input of the mask:
+    - mx.array that can broadcast to B * H_q * L * S, which needs to be reshaped to match multi-head dimensions
+    - None which will be ignored
+    """
     factor = mx.rsqrt(query.shape[-1]) if scale is None else mx.array(scale)
     factor = factor.astype(query.dtype)
     expected_shape = query.shape
@@ -50,13 +54,9 @@ def scaled_dot_product_attention_grouped(
 
     scores = mx.matmul(query, key.swapaxes(-2, -1)) * factor
     if mask is not None:
-        if mask == "causal":
-            mask = causal_mask(L, S, scores.dtype)
-            scores = scores + mask
-        else:
-            mask = mx.broadcast_to(mask, (*B, H_q, L, S))
-            mask = mask.reshape(*B, 1, H, n_repeats, L, S)
-            scores = scores + mask
+        mask = mx.broadcast_to(mask, (*B, H_q, L, S))
+        mask = mask.reshape(*B, 1, H, n_repeats, L, S)
+        scores = scores + mask
     result = mx.matmul(softmax(scores, axis=-1), value)
     return result.reshape(expected_shape)
 
@@ -66,20 +66,31 @@ def flash_attention(
     key: mx.array,
     value: mx.array,
     scale: float | None = None,
+    mask: mx.array | None = None,
 ) -> mx.array:
-    *B, H_q, S, E = query.shape
-    _, H, L, _ = key.shape
+    factor = mx.rsqrt(query.shape[-1]) if scale is None else mx.array(scale)
+    factor = factor.astype(query.dtype)
+
+    *B, H_q, L, E = query.shape
+    _, H, S, _ = key.shape
     assert H_q % H == 0
-    query = query.reshape(-1, S, E)
-    key = key.reshape(-1, L, E)
-    value = value.reshape(-1, L, E)
+    query = query.reshape(-1, L, E)
+    key = key.reshape(-1, S, E)
+    value = value.reshape(-1, S, E)
     query = mx.contiguous(query)
     key = mx.contiguous(key)
     value = mx.contiguous(value)
+    N = query.shape[0]
+    if mask is None:
+        mask = mx.zeros((N, L, S))
+    else:
+        mask = mx.reshape(mx.broadcast_to(mask, (*B, H_q, L, S)), (N, L, S))
+        # Seems like an MLX bug: need to make contiguous before passing to the kernel
+        mask = mx.contiguous(mask)
     result = tiny_llm_ext_ref.flash_attention(
-        query, key, value, scale, num_heads=H_q, num_kv_heads=H
+        query, key, value, mask, factor, num_heads=H_q, num_kv_heads=H,
     )
-    return result.reshape(*B, H_q, S, E)
+    return result.reshape(*B, H_q, L, E)
 
 
 class SimpleMultiHeadAttention:

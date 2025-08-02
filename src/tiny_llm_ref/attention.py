@@ -31,7 +31,7 @@ def scaled_dot_product_attention_grouped(
     key: mx.array,
     value: mx.array,
     scale: float | None = None,
-    mask: mx.array | None = None,
+    mask: mx.array | str | None = None,
 ) -> mx.array:
     """
     Potential input of the mask:
@@ -54,9 +54,13 @@ def scaled_dot_product_attention_grouped(
 
     scores = mx.matmul(query, key.swapaxes(-2, -1)) * factor
     if mask is not None:
-        mask = mx.broadcast_to(mask, (*B, H_q, L, S))
-        mask = mask.reshape(*B, 1, H, n_repeats, L, S)
-        scores = scores + mask
+        if mask == "causal":
+            mask = causal_mask(L, S, scores.dtype)
+            scores = scores + mask
+        else:
+            mask = mx.broadcast_to(mask, (*B, H_q, L, S))
+            mask = mask.reshape(*B, 1, H, n_repeats, L, S)
+            scores = scores + mask
     result = mx.matmul(softmax(scores, axis=-1), value)
     return result.reshape(expected_shape)
 

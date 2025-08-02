@@ -250,7 +250,7 @@ class Qwen2ModelWeek2:
                 ].post_attention_layernorm.weight.astype(precision),
                 max_seq_len=mlx_model.args.max_position_embeddings,
                 theta=mlx_model.args.rope_theta,
-                use_flash_attention=False,
+                use_flash_attention=True,
             )
             self.layers_inner.append(layer)
         self.norm = RMSNorm(

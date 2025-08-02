@@ -80,6 +80,8 @@ using namespace metal;
             int64_t m_idx_3 = j * Bc + b;
             int64_t m_idx_converted = elem_to_loc(m_idx_1 * L * S + m_idx_2 * S + m_idx_3, mask_shape, mask_strides, 3);
             s_a_b += mask[m_idx_converted];
+        } else {
+            s_a_b = -1e9;
         }
 
         // for each cell, get the rowmax of the corresponding row, and compute m_i in each

@@ -36,11 +36,11 @@ using namespace metal;
     device const float *q_ptr = q + n * L * E + i * Br * E;
     device const float *k_ptr_base = k + (n / q_kv_ratio) * S * E;
     device const float *v_ptr_base = v + (n / q_kv_ratio) * S * E;
-    threadgroup float o_i[32][128]; // assume max(E) = 128, max(Br) = 32, only lane 0 writes to it
+    threadgroup float o_i[128 * 32]; // assume max(E) = 128, max(Br) = 32, only lane 0 writes to it
 
     if (simd_lid == 0) {
         for (int c = 0; c < E; c++) {
-            o_i[a][c] = 0.0;
+            o_i[a * E + c] = 0.0;
         }
     }
 
@@ -58,6 +58,14 @@ using namespace metal;
     if (simd_lid == 0) {
         for (int c = 0; c < E; c++) {
             q_local[a][c] = q_ptr[a * E + c];
+        }
+    }
+
+    if (simd_lid == 0) {
+        for (int c = 0; c < E; c++) {
+            if (is_i_in_range && n < N) {
+                out[n * L * E + (i * Br + a) * E + c] = -233.0;
+            }
         }
     }
 
@@ -108,6 +116,7 @@ using namespace metal;
 
         // compute o_i, where O is Br x E; note that this does not align
         // with the threadgroup we dispatch, so we have to do threadgroup sync
+        threadgroup_barrier(mem_flags::mem_threadgroup);
         for (int c = 0; c < E; c++) {
             float v;
             if (is_i_in_range && is_j_in_range) {
@@ -117,17 +126,18 @@ using namespace metal;
             }
             float res = simd_sum(v); // res = sum(p_a_b * v_j) on each cell
             // only lane 0 will write to threadgroup memory
-            if (simd_lid == 0) {
-                o_i[a][c] = m_i_diff_exp * o_i[a][c] + res;
+            if (simd_lid == 0 && is_i_in_range && is_j_in_range) {
+                o_i[a * E + c] = m_i_diff_exp * o_i[a * E + c] + res;
             }
         }
     }
 
     // write to output
     if (simd_lid == 0) {
+        threadgroup_barrier(mem_flags::mem_threadgroup);
         for (int c = 0; c < E; c++) {
             if (is_i_in_range && n < N) {
-                float o_i_c = o_i[a][c];
+                float o_i_c = o_i[a * E + c];
                 o_i_c /= l_i;
                 out[n * L * E + (i * Br + a) * E + c] = o_i_c;
             }

@@ -288,6 +288,7 @@ void FlashAttention::eval_gpu(const std::vector<mx::array> &inputs, std::vector<
     compute_encoder.set_bytes(S, 9);
     compute_encoder.set_bytes(E, 10);
 
+    // Make sure the data type matches with the metal kernel: otherwise you'll get flaky issues and stuck :(
     compute_encoder.set_bytes(num_kv_heads_, 11);
     compute_encoder.set_bytes(num_heads_, 12);
     compute_encoder.set_bytes(scale_, 13);

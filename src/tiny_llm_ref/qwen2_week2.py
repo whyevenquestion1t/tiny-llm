@@ -78,11 +78,9 @@ class Qwen2MultiHeadAttention:
         projection_q = projection_q.transpose(0, 2, 1, 3)
         projection_k = projection_k.transpose(0, 2, 1, 3)
         projection_v = projection_v.transpose(0, 2, 1, 3)
-        projection_k, projection_v, _, kv_cache_mask = cache.update_and_fetch(
-            projection_k, projection_v, q_L=L
+        projection_k, projection_v, _, mask = cache.update_and_fetch(
+            projection_k, projection_v, mask_length=L, mask=mask
         )
-        if kv_cache_mask is not None:
-            mask = kv_cache_mask
         S = projection_k.shape[-2]
         if mask == "causal":
             mask = causal_mask(L, S, mx.float32)

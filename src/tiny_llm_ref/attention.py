@@ -87,9 +87,13 @@ def flash_attention(
     value = mx.contiguous(value)
     N = query.shape[0]
     if mask is None:
-        mask = mx.reshape(mx.broadcast_to(mx.zeros((L, S)), (*B, H_q, L, S)), (N, L, S)).astype(mx.float32)
+        mask = mx.reshape(
+            mx.broadcast_to(mx.zeros((L, S)), (*B, H_q, L, S)), (N, L, S)
+        ).astype(mx.float32)
     else:
-        mask = mx.reshape(mx.broadcast_to(mask, (*B, H_q, L, S)), (N, L, S)).astype(mx.float32)
+        mask = mx.reshape(mx.broadcast_to(mask, (*B, H_q, L, S)), (N, L, S)).astype(
+            mx.float32
+        )
     result = tiny_llm_ext_ref.flash_attention(
         query,
         key,

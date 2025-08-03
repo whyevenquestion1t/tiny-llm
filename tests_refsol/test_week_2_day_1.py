@@ -1,6 +1,12 @@
 import pytest
 from .utils import *
-from .tiny_llm_base import Qwen2ModelWeek2, Embedding, dequantize_linear, qwen2_week2, TinyKvFullCache
+from .tiny_llm_base import (
+    Qwen2ModelWeek2,
+    Embedding,
+    dequantize_linear,
+    qwen2_week2,
+    TinyKvFullCache,
+)
 from mlx_lm import load
 
 # TODO: task 1 tests
@@ -94,6 +100,7 @@ def test_task_3_qwen_2_7b():
 def test_task_3_qwen_2_15b():
     helper_test_task_3("Qwen/Qwen2-1.5B-Instruct-MLX", 3)
 
+
 def helper_test_task_4(model_name: str, seq_len: int, iters: int = 1):
     mlx_model, tokenizer = load(model_name)
     model = Qwen2ModelWeek2(mlx_model)
@@ -102,11 +109,14 @@ def helper_test_task_4(model_name: str, seq_len: int, iters: int = 1):
         inputs = mx.random.randint(0, tokenizer.vocab_size, (1, seq_len))
         ref_outputs = mlx_model(inputs)
         for offset in range(seq_len):
-            user_out = model(inputs=inputs[:, offset:offset+1], offset=offset, cache=cache)
-            ref_out = ref_outputs[:, offset:offset+1, :]
+            user_out = model(
+                inputs=inputs[:, offset : offset + 1], offset=offset, cache=cache
+            )
+            ref_out = ref_outputs[:, offset : offset + 1, :]
             user_out = user_out - mx.logsumexp(user_out, keepdims=True)
             ref_out = ref_out - mx.logsumexp(ref_out, keepdims=True)
             assert_allclose(user_out, ref_out, precision=mx.float16, rtol=1e-1)
+
 
 @pytest.mark.skipif(
     not qwen_2_05b_model_exists(), reason="Qwen2-0.5B-Instruct-MLX model not found"

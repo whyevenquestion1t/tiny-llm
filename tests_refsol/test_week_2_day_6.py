@@ -61,8 +61,18 @@ def attention_helper(
                 )
             mx.eval(user_output_1)
             mx.eval(user_output_2)
-            assert_allclose(user_output_2, reference_output_2, precision=mx.float16, message="no mask")
-            assert_allclose(user_output_1, reference_output_1, precision=mx.float16, message="with mask")
+            assert_allclose(
+                user_output_2,
+                reference_output_2,
+                precision=mx.float16,
+                message="no mask",
+            )
+            assert_allclose(
+                user_output_1,
+                reference_output_1,
+                precision=mx.float16,
+                message="with mask",
+            )
 
 
 def test_flash_attention_with_mask_cpu_small():

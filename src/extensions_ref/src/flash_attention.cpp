@@ -261,10 +261,7 @@ void FlashAttention::eval_gpu(const std::vector<mx::array> &inputs, std::vector<
     compute_encoder.set_input_array(k, 1);
     compute_encoder.set_input_array(v, 2);
     compute_encoder.set_input_array(mask, 3);
-
-    // Encode output arrays to kernel
-    compute_encoder.set_output_array(out, 4);
-
+    compute_encoder.set_output_array(out, 4);    
     compute_encoder.set_vector_bytes(mask.shape(), 5);
     compute_encoder.set_vector_bytes(mask.strides(), 6);
 
@@ -281,10 +278,10 @@ void FlashAttention::eval_gpu(const std::vector<mx::array> &inputs, std::vector<
         throw std::runtime_error("flash_attention: out must be contiguous");
     }
 
-    const int64_t N = q.shape()[0];
-    const int64_t L = q.shape()[1];
-    const int64_t S = k.shape()[1];
-    const int64_t E = q.shape()[2];
+    const int N = q.shape()[0];
+    const int L = q.shape()[1];
+    const int S = k.shape()[1];
+    const int E = q.shape()[2];
 
     compute_encoder.set_bytes(N, 7);
     compute_encoder.set_bytes(L, 8);
@@ -298,8 +295,8 @@ void FlashAttention::eval_gpu(const std::vector<mx::array> &inputs, std::vector<
     size_t tgp_size = kernel->maxTotalThreadsPerThreadgroup();
     size_t simd_width = kernel->threadExecutionWidth();
 
-    const int64_t Br = 32;
-    const int64_t Bc = 32;
+    const int Br = 32;
+    const int Bc = 32;
     if (simd_width * Br > tgp_size) {
         throw std::runtime_error("flash_attention: simd_width * Br must be equal to tgp_size");
     }
@@ -319,8 +316,8 @@ void FlashAttention::eval_gpu(const std::vector<mx::array> &inputs, std::vector<
         throw std::runtime_error("flash_attention: Bc must be less than 32");
     }
 
-    const int64_t Tr = (L + Br - 1) / Br;
-    const int64_t Tc = (S + Bc - 1) / Bc;
+    const int Tr = (L + Br - 1) / Br;
+    const int Tc = (S + Bc - 1) / Bc;
 
     compute_encoder.set_bytes(Br, 14);
     compute_encoder.set_bytes(Bc, 15);

@@ -18,31 +18,51 @@ def attention_helper(
             value = mx.random.uniform(shape=kv_shape, dtype=precision)
             mask = mx.random.uniform(shape=(BATCH, 1, L, S), dtype=precision)
 
-            reference_output = mx.fast.scaled_dot_product_attention(
+            reference_output_1 = mx.fast.scaled_dot_product_attention(
                 q=query,
                 k=key,
                 v=value,
                 scale=scale,
                 mask=mask,
             )
+            reference_output_2 = mx.fast.scaled_dot_product_attention(
+                q=query,
+                k=key,
+                v=value,
+                scale=scale,
+            )
             if use_flash_attention:
-                user_output = flash_attention(
+                user_output_1 = flash_attention(
                     query,
                     key,
                     value,
                     scale=scale,
                     mask=mask,
+                )
+                user_output_2 = flash_attention(
+                    query,
+                    key,
+                    value,
+                    scale=scale,
                 )
             else:
-                user_output = scaled_dot_product_attention_grouped(
+                user_output_1 = scaled_dot_product_attention_grouped(
                     query,
                     key,
                     value,
                     scale=scale,
                     mask=mask,
                 )
-            mx.eval(user_output)  # so that any error will be caught here
-            assert_allclose(user_output, reference_output, precision=mx.float16)
+                user_output_2 = scaled_dot_product_attention_grouped(
+                    query,
+                    key,
+                    value,
+                    scale=scale,
+                )
+            mx.eval(user_output_1)
+            mx.eval(user_output_2)
+            assert_allclose(user_output_2, reference_output_2, precision=mx.float16, message="no mask")
+            assert_allclose(user_output_1, reference_output_1, precision=mx.float16, message="with mask")
 
 
 def test_flash_attention_with_mask_cpu_small():

@@ -54,19 +54,9 @@ def simple_generate_with_kv_cache(
 
     # prefill with the prompt
     tokens = mx.array(tokenizer.encode(prompt, add_special_tokens=False))
-    offset = 0
-    prefill_max = 64
-    total_tokens = tokens.size
-    while tokens.size > prefill_max:
-        token, _ = _step(model, tokens[:prefill_max], offset, kv_cache)
-        for i in kv_cache:
-            mx.eval(i.key_values[0])
-            mx.eval(i.key_values[1])
-        offset += prefill_max
-        tokens = tokens[prefill_max:]
-        print(f"Prefill progress: {offset}/{total_tokens}", flush=True)
     detokenizer = tokenizer.detokenizer
     detokenizer.reset()
+    offset = tokens.size
     # generate/decode
     while True:
         token, _ = _step(model, tokens, offset, kv_cache)

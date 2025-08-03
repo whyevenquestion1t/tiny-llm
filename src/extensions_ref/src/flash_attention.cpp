@@ -64,6 +64,10 @@ void FlashAttention::eval_cpu(const std::vector<mx::array> &inputs, std::vector<
     auto &mask = inputs[3];
     auto &out = outputs[0];
 
+    if (out.dtype() != mx::float32) {
+        throw std::runtime_error("flash_attention: output dtype must be float32");
+    }
+
     out.set_data(mx::allocator::malloc(out.nbytes()));
 
     auto &encoder = mx::cpu::get_command_encoder(stream());
@@ -235,9 +239,14 @@ void FlashAttention::eval_gpu(const std::vector<mx::array> &inputs, std::vector<
     const auto &mask = inputs[3];
     auto &out = outputs[0];
 
+    if (out.dtype() != mx::float32) {
+        throw std::runtime_error("flash_attention: output dtype must be float32");
+    }
+
+    out.set_data(mx::allocator::malloc(out.nbytes()));
+
     auto &s = stream();
     auto &d = mx::metal::device(s.device);
-    out.set_data(mx::allocator::malloc(out.nbytes()));
 
     // Make a kernel from this metal library
     auto library = d.get_library("tiny_llm_ext_ref");
@@ -247,20 +256,17 @@ void FlashAttention::eval_gpu(const std::vector<mx::array> &inputs, std::vector<
     auto &compute_encoder = d.get_command_encoder(s.index);
     compute_encoder.set_compute_pipeline_state(kernel);
 
-    // Kernel parameters are registered with buffer indices corresponding to
-    // those in the kernel declaration at axpby.metal
-    int ndim = out.ndim();
-
     // Encode input arrays to kernel
     compute_encoder.set_input_array(q, 0);
     compute_encoder.set_input_array(k, 1);
     compute_encoder.set_input_array(v, 2);
     compute_encoder.set_input_array(mask, 3);
-    compute_encoder.set_vector_bytes(mask.shape(), 4);
-    compute_encoder.set_vector_bytes(mask.strides(), 5);
 
     // Encode output arrays to kernel
-    compute_encoder.set_output_array(out, 6);
+    compute_encoder.set_output_array(out, 4);
+
+    compute_encoder.set_vector_bytes(mask.shape(), 5);
+    compute_encoder.set_vector_bytes(mask.strides(), 6);
 
     if (!q.flags().row_contiguous) {
         throw std::runtime_error("flash_attention: q must be contiguous");
@@ -270,6 +276,9 @@ void FlashAttention::eval_gpu(const std::vector<mx::array> &inputs, std::vector<
     }
     if (!v.flags().row_contiguous) {
         throw std::runtime_error("flash_attention: v must be contiguous");
+    }
+    if (!out.flags().row_contiguous) {
+        throw std::runtime_error("flash_attention: out must be contiguous");
     }
 
     const int64_t N = q.shape()[0];
@@ -306,8 +315,12 @@ void FlashAttention::eval_gpu(const std::vector<mx::array> &inputs, std::vector<
         throw std::runtime_error("flash_attention: Br must be less than 32");
     }
 
-    const int64_t Tr = (S + Br - 1) / Br;
-    const int64_t Tc = (L + Bc - 1) / Bc;
+    if (Bc > 32) {
+        throw std::runtime_error("flash_attention: Bc must be less than 32");
+    }
+
+    const int64_t Tr = (L + Br - 1) / Br;
+    const int64_t Tc = (S + Bc - 1) / Bc;
 
     compute_encoder.set_bytes(Br, 14);
     compute_encoder.set_bytes(Bc, 15);

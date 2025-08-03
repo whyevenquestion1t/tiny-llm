@@ -4,7 +4,9 @@ from .tiny_llm_base import *
 from .utils import *
 
 
-def attention_helper(stream: mx.Stream, H_q, H, L, E, S, BATCH, use_flash_attention: bool = False):
+def attention_helper(
+    stream: mx.Stream, H_q, H, L, E, S, BATCH, use_flash_attention: bool = False
+):
     precision = mx.float32
     with mx.stream(stream):
         q_shape = (BATCH, H_q, L, E)

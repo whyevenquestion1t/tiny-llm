@@ -8,10 +8,10 @@ using namespace metal;
     device const float* k [[buffer(1)]],
     device const float* v [[buffer(2)]],
     device const float* mask [[buffer(3)]],
-    constant const int* mask_shape [[buffer(4)]],
-    constant const int64_t* mask_strides [[buffer(5)]],
-    device float* out [[buffer(6)]],
-    [[maybe_unused]] device const int64_t &N [[buffer(7)]],
+    device float* out [[buffer(4)]],
+    constant const int* mask_shape [[buffer(5)]],
+    constant const int64_t* mask_strides [[buffer(6)]],
+    device const int64_t &N [[buffer(7)]],
     device const int64_t &L [[buffer(8)]],
     device const int64_t &S [[buffer(9)]],
     device const int64_t &E [[buffer(10)]],
@@ -31,18 +31,12 @@ using namespace metal;
     int a = simd_gid; // max=Br
     int b = simd_lid; // max=Bc
 
-    // We do not use the shared memory for the threadgroup in this course --
-    // this is left as an exercise for the students. For example, you can allocate
-    // 128*32*sizeof(float) bytes * number of arrays and use them as the threadgroup
-    // shared memory.
-
     bool is_i_in_range = i * Br + a < L && a < Br;
-
     const int q_kv_ratio = num_heads / num_kv_heads;
     device const float *q_ptr = q + n * L * E + i * Br * E;
     device const float *k_ptr_base = k + (n / q_kv_ratio) * S * E;
     device const float *v_ptr_base = v + (n / q_kv_ratio) * S * E;
-    threadgroup float o_i[32][128]; // Br x E, each simd group shares an o_i, only lane 0 writes to it
+    threadgroup float o_i[32][128]; // assume max(E) = 128, max(Br) = 32, only lane 0 writes to it
 
     if (simd_lid == 0) {
         for (int c = 0; c < E; c++) {
@@ -50,6 +44,7 @@ using namespace metal;
         }
     }
 
+    threadgroup float q_local[32][128]; // assume max(E) = 128, max(Br) = 32, access by a, c
     // q_ptr: L * E
     // k_ptr: S * E
     // v_ptr: S * E
@@ -58,6 +53,13 @@ using namespace metal;
 
     float m_i = -1e9; // per thread; sync to threadgroup memory later
     float l_i = 0.0; // per thread; sync to threadgroup memory later
+
+    // load q_local
+    if (simd_lid == 0) {
+        for (int c = 0; c < E; c++) {
+            q_local[a][c] = q_ptr[a * E + c];
+        }
+    }
 
     for (int j = 0; j < Tc; j++) {
         bool is_j_in_range = j * Bc + b < S && b < Bc;
@@ -69,10 +71,9 @@ using namespace metal;
         float s_a_b = 0.0;
         for (int c = 0; c < E; c++) {
             if (is_i_in_range && is_j_in_range) {
-                s_a_b += q_ptr[a * E + c] * k_ptr[b * E + c];
+                s_a_b += q_local[a][c] * k_ptr[b * E + c];
             }
         }
-
         s_a_b *= scale;
         if (is_i_in_range && is_j_in_range) {
             int64_t m_idx_1 = n;
@@ -125,11 +126,10 @@ using namespace metal;
     // write to output
     if (simd_lid == 0) {
         for (int c = 0; c < E; c++) {
-            o_i[a][c] /= l_i;
-        }
-        for (int c = 0; c < E; c++) {
-            if (is_i_in_range) {
-                out[n * L * E + (i * Br + a) * E + c] = o_i[a][c];
+            if (is_i_in_range && n < N) {
+                float o_i_c = o_i[a][c];
+                o_i_c /= l_i;
+                out[n * L * E + (i * Br + a) * E + c] = o_i_c;
             }
         }
     }

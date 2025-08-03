@@ -26,6 +26,7 @@ def causal_mask(L: int, S: int, dtype: mx.Dtype) -> mx.array:
     mask = mx.where(mask, mx.array(0), mx.array(-mx.inf)).astype(dtype)
     return mask
 
+
 def scaled_dot_product_attention_grouped(
     query: mx.array,
     key: mx.array,
@@ -88,13 +89,19 @@ def flash_attention(
     if mask is None:
         mask = mx.zeros((N, L, S))
     else:
-        mask = mx.reshape(mx.broadcast_to(mask, (*B, H_q, L, S)), (N, L, S))
-        # Seems like an MLX bug: need to make contiguous before passing to the kernel
-        mask = mx.contiguous(mask)
+        mask = mx.contiguous(
+            mx.reshape(mx.contiguous(mx.broadcast_to(mask, (*B, H_q, L, S))), (N, L, S))
+        )
     result = tiny_llm_ext_ref.flash_attention(
-        query, key, value, mask, factor, num_heads=H_q, num_kv_heads=H,
+        query,
+        key,
+        value,
+        mask,
+        factor,
+        num_heads=H_q,
+        num_kv_heads=H,
     )
-    return result.reshape(*B, H_q, L, E)
+    return mx.contiguous(result.reshape(*B, H_q, L, E))
 
 
 class SimpleMultiHeadAttention:

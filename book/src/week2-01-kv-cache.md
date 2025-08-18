@@ -138,11 +138,16 @@ v = linear(x, wv, bv) -> B, L', H, D
 q = rope(q, offset=slice(offset, offset + L'))
 k = rope(k, offset=slice(offset, offset + L'))
 (transpose as needed)
-k, v = cache.update_and_fetch(k, v)
-x = scaled_dot_product_attention_grouped(q, k, v, scale, mask) -> B, L, H_q, D  # at float32 precision
+k, v = cache.update_and_fetch(k, v) ; k/v: B, L, H, D, q: B, L', H, D
+x = scaled_dot_product_attention_grouped(q, k, v, scale, mask) -> B, L', H_q, D  # at float32 precision
 (transpose as needed)
-x = linear(x, wo) -> B, L, E
+x = linear(x, wo) -> B, L', E
 ```
+
+We use two different variables for the `L'` because they have different meanings in the context of this chapter
+and the context of week 1 day 3: in the GQA implementation, k/v's sequence length is `S` (source length), while
+q's sequence length is `L`. In the Qwen2 multihead attention implementation, `L'` is the "new token" and `L` is
+the total sequence length, which corresponds to `L` and `S` in week 1 respectively.
 
 ## Task 3: Implement the Model
 

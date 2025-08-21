@@ -1,6 +1,6 @@
 # Week 1 Day 2: Positional Encodings and RoPE
 
-In day 2, we will implement the positional embedding used in the Qwen2 model: Rotary Postional Encoding. In a transformer
+In day 2, we will implement the positional embedding used in the Qwen2 model: Rotary Positional Encoding. In a transformer
 model, we need a way to embed the information of the position of a token into the input of the attention layers. In Qwen2,
 positional embedding is applied within the multi head attention layer on the query and key vectors.
 
@@ -9,7 +9,7 @@ positional embedding is applied within the multi head attention layer on the que
 - [You could have designed state of the art positional encoding](https://huggingface.co/blog/designing-positional-encoding)
 - [Roformer: Enhanced Transformer with Rotary Positional Encoding](https://arxiv.org/pdf/2104.09864)
 
-## Task 1: Implement Rotary Postional Encoding "RoPE"
+## Task 1: Implement Rotary Positional Encoding "RoPE"
 
 You will need to modify the following file:
 
@@ -80,7 +80,6 @@ frequencies to each half separately.
 **📚 Readings**
 
 - [vLLM implementation of RoPE](https://github.com/vllm-project/vllm/blob/main/vllm/model_executor/layers/rotary_embedding)
-
 
 You can test your implementation by running the following command:
 
